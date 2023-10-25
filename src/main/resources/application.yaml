@@ -1,5 +1,5 @@
 server:
-  port :
+  port:
     8080
 
 spring:
@@ -9,4 +9,11 @@ spring:
         10MB
       max-request-size:
         10MB
+  #logging:
+  #  level:
+  #    root:
+  #      DEBUG
 
+simple:
+  map:
+    {'KEY1': 'value1', 'KEY2': 'value3', 'KEY3': 'value5'}
