@@ -20,6 +20,9 @@ public class ExcelFilePropertiesConfig {
     @Value("${excel.upload.table.products.start-point}")
     private int startPoint;
 
+    @Value("${excel.upload.date-format}")
+    private String dateFormat;
+
     public Map<String, String> getHeader1() {
         return header1;
     }
@@ -34,5 +37,9 @@ public class ExcelFilePropertiesConfig {
 
     public int getStartPoint() {
         return startPoint;
+    }
+
+    public String getDateFormat() {
+        return dateFormat;
     }
 }
