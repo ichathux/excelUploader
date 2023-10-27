@@ -14,7 +14,7 @@ public class Crop {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cropID;
     @Column(name = "cropName")
-    private String cropName;
+    public String cropName;
     @Column(name = "plantUOM")
     private String plantUOM;
     @Column(name = "yieldUOM")

@@ -30,15 +30,22 @@ spring:
         10MB
 
 # Cache configuration for Caffeine
-  cache:
-    cache-names:
-      crop
-    caffeine:
-      spec:
-        maximumSize=100
+#  cache:
+#    type:
+#      ehcache
+#    ehcache:
+#      config:
+#        classpath:ehcache.xml
 
-#logging:
-#  level:
+logging:
+  level:
+    root:
+      INFO
+
+    org:
+      springframework:
+        cache:
+          DEBUG
 #    org.hibernate.SQL:
 #      DEBUG
 #    org.hibernate.type.descriptor.sql.BasicBinder:

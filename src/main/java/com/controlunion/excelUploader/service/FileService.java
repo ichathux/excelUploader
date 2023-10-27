@@ -1,8 +1,11 @@
 package com.controlunion.excelUploader.service;
 
 import com.controlunion.excelUploader.config.ExcelFilePropertiesConfig;
+import com.controlunion.excelUploader.enums.Errors;
 import com.controlunion.excelUploader.model.Crop;
+import com.controlunion.excelUploader.model.FarmerList;
 import com.controlunion.excelUploader.repository.CropRepository;
+import com.controlunion.excelUploader.repository.FarmerlistRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.ss.usermodel.*;
@@ -27,6 +30,9 @@ public class FileService {
     private ExcelFilePropertiesConfig excelProperties;
     @Autowired
     private CropRepository cropRepository;
+
+    @Autowired
+    private FarmerlistRepository farmerlistRepository;
 
     public FileService(ExcelFilePropertiesConfig excelFilePropertiesConfig) {
         this.excelProperties = excelFilePropertiesConfig;
@@ -61,6 +67,7 @@ public class FileService {
         Map<Integer, String> tableThirdLevelHeaders = excelProperties.getHeader3(); // store crops headers
         Map<Integer, Crop> cropMapping = new HashMap<>(); // store crops in excel sheet with cell address
         HashMap<String, ArrayList<String>> userMap = new HashMap<>(); // store farmer's plots
+        List<FarmerList> farmerLists = new ArrayList<>();
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(Files.newInputStream(temp.toPath()))) {
             Sheet sheet = workbook.getSheetAt(0); // Assuming the data is on the first sheet
@@ -71,37 +78,40 @@ public class FileService {
                 int rowNumber = row.getRowNum();
                 switch (rowNumber) {
                     case 0:
-                        cellNameValidation(row.getCell(0) ,
+                        tableHeaderNameValidation(row.getCell(0) ,
                                 "Project Name" ,
                                 errorList
                         );
                         break;
                     case 1:
-                        cellNameValidation(row.getCell(0) ,
+                        tableHeaderNameValidation(row.getCell(0) ,
                                 "Project Id" ,
                                 errorList
                         );
                         break;
                     case 2:
-                        cellNameValidation(row.getCell(0) ,
+                        tableHeaderNameValidation(row.getCell(0) ,
                                 "Year" ,
                                 errorList
                         );
                         break;
                     case 3:
-                        log.debug("reading headers");
+
 //                        read top level headers
+                        log.debug("reading headers");
                         validate1stLevelHeaders(errorList ,
                                 tableTopLevelHeaders ,
                                 row.cellIterator());
                         break;
                     case 4:
-                        log.debug("reading sub headers");
+
 //                        read second level headers
+                        log.debug("reading 4 sub headers");
                         validate2ndLevelHeaders(errorList ,
                                 tableSecondLevelHeaders ,
                                 cropMapping ,
                                 row.cellIterator());
+                        log.debug("ending 4 sub headers");
                         break;
                     case 5:
 //                        reading third level headers
@@ -111,13 +121,15 @@ public class FileService {
                                 row.cellIterator());
                         break;
                     default:
-                        log.debug("reading sub sub headers");
+
 //                        raed user input data
-                        readUserData(errorList ,
+                        log.debug("reading sub sub headers");
+                        readUserInputData(errorList ,
                                 userMap ,
                                 row.cellIterator() ,
                                 cropMapping ,
-                                workbook);
+                                workbook,
+                                farmerLists);
                         break;
 
                 }
@@ -137,13 +149,16 @@ public class FileService {
 
         if (!errorList.isEmpty()) {
             log.error("errors while reading file ");
-            errorList.stream().forEach(System.out::println);
+//            errorList.stream().forEach(System.out::println);
             return ResponseEntity.badRequest().body(errorList);
         }
-
+//        System.out.println(farmerLists);
+        saveFarmerListOnDB(farmerLists);
         return ResponseEntity.ok().build();
     }
-
+    private void saveFarmerListOnDB(List<FarmerList> farmerLists){
+        farmerlistRepository.saveAll(farmerLists);
+    }
     //    validating crops sub headers
     private void validateCropsSubHeaders(List<String> errorList ,
                                          Map<Integer, String> tableThirdLevelHeaders ,
@@ -155,6 +170,7 @@ public class FileService {
             if (cell.getCellType() == CellType.BLANK) {
                 continue;
             }
+//            indexing crops sub header
             index = ((cell.getColumnIndex() - excelProperties.getStartPoint()) % 4) + 1;
             String title = tableThirdLevelHeaders.get(index);
             try {
@@ -187,7 +203,7 @@ public class FileService {
                         .get(cell.getAddress().toString().trim())
                         .equals(cell.getStringCellValue().trim())) {
                     log.error("error in " + cell.getAddress() + ", " + cell.getStringCellValue());
-                    cellNameValidation(cell ,
+                    tableHeaderNameValidation(cell ,
                             tableTopLevelHeaders.get(cell.getAddress().toString().trim()) ,
                             errorList
                     );
@@ -206,6 +222,7 @@ public class FileService {
         while (cellIterator.hasNext()) {
             Cell cell = cellIterator.next();
             if (cell.getCellType() == CellType.BLANK) {
+//                errorList.add(cell.getAddress() + " cant be blank");
                 continue;
             }
 //            validating fixed headers in table
@@ -215,7 +232,7 @@ public class FileService {
                             .get(cell.getAddress().toString().trim())
                             .equals(cell.getStringCellValue().trim())) {
                         log.error("error in " + cell.getAddress() + ", " + cell.getStringCellValue());
-                        cellNameValidation(cell ,
+                        tableHeaderNameValidation(cell ,
                                 tableSecondLevelHeaders.get(cell.getAddress().toString().trim()) ,
                                 errorList
                         );
@@ -230,9 +247,11 @@ public class FileService {
     }
 
     //    validating crops implement
-    private void validateCrops(List<String> errorList , Map<Integer, Crop> cropMapping , Cell cell) {
+    private void validateCrops(List<String> errorList ,
+                               Map<Integer, Crop> cropMapping ,
+                               Cell cell) {
         try {
-            Crop crop = getCrop(cell , errorList);
+            Crop crop = getCrop(cell.getStringCellValue().trim());
             if (crop == null) {
                 errorList.add(cell.getAddress() + " must be valid existing crop");
             } else {
@@ -246,34 +265,36 @@ public class FileService {
     }
 
 
-    private void readUserData(List<String> errorList ,
-                              HashMap<String, ArrayList<String>> userMap ,
-                              Iterator<Cell> cellIterator ,
-                              Map<Integer, Crop> cropMapping ,
-                              Workbook workbook) {
+    private void readUserInputData(List<String> errorList ,
+                                   HashMap<String, ArrayList<String>> userMap ,
+                                   Iterator<Cell> cellIterator ,
+                                   Map<Integer, Crop> cropMapping ,
+                                   Workbook workbook,
+                                   List<FarmerList> farmerLists) {
 
-        String unitNoEUJAS;
-        String unitNoNOP;
-        String farCodeNOP;
-        String farmerName;
-        String farmName;
-        double totalArea;
-        String city;
-        String gps;
-        Date dateCert;
-        String aplyRetrospe;
-        Date dateConversion;
-        String fertilizer;
-        String eujasField;
-        String eujasHarvest;
-        String usdaHarvest;
-        String usdaField;
-        String address;
-        String certification;
-        Date dateOrganic;
-        long cuid;
+        String unitNoEUJAS= null;
+        String unitNoNOP= null;
+        String farCodeNOP= null;
+        String farmerName= null;
+        String farmName= null;
+        double totalArea = 0.0;
+        String city= null;
+        String gps= null;
+        Date dateCert= null;
+        String aplyRetrospe= null;
+        Date dateConversion = null;
+        String fertilizer= null;
+        String ferUseDate= null;
+        String eujasField= null;
+        String eujasHarvest= null;
+        String usdaHarvest= null;
+        String usdaField= null;
+        String address= null;
+        String certification= null;
+        Date dateOrganic= null;
+        long cuid = 0;
         String farmerCode = null;
-        String plotCode;
+        String plotCode= null;
         Crop crop = new Crop();
         if (cropMapping.keySet().size() == 0) {
             errorList.add("You need add least one crop");
@@ -366,7 +387,7 @@ public class FileService {
                         log.debug("Checking duplicate plots for farmer : " + farmerCode + " with " + plotCode);
                         if (userMap.containsKey(farmerCode)) {
                             if (userMap.get(farmerCode).contains(plotCode)) {
-                                errorList.add(cell.getAddress() + " contains duplicate plot value");
+                                errorList.add(cell.getAddress() + " contains duplicate plot value : "+cell.getStringCellValue());
                             } else {
                                 userMap.get(farmerCode).add(plotCode);
                             }
@@ -448,6 +469,7 @@ public class FileService {
                     break;
                 case 16:
                     try {
+                        ferUseDate = cell.getStringCellValue();
                         log.debug("Last date of use : " + cell.getStringCellValue());
                     } catch (IllegalStateException e) {
                         errorList.add(cell.getAddress() + " contains illegal format.");
@@ -507,40 +529,59 @@ public class FileService {
 //                    reading crop section
                 default:
                     try {
-//                        log.info("starting read crop data "+cell.getNumericCellValue());
+//                        log.debug("starting read crop data "+cell.getNumericCellValue());
                         if (cropMapping.containsKey(cell.getColumnIndex())) {
                             crop = cropMapping.get(cell.getColumnIndex());
-                            log.info("prod " + crop.getCropName() + cell.getNumericCellValue());
+                            log.debug("prod " + crop.getCropName()  + cell.getNumericCellValue());
                         }
-                        log.info(crop.getCropName() + " cell-type : "+cell.getCellType().toString()+" value : "+ cell.getNumericCellValue());
+//                        log.debug(crop.getCropName() + " cell-type : "+cell.getCellType().toString()+" value : "+ cell.getNumericCellValue());
                     } catch (IllegalStateException e) {
                         errorList.add(cell.getAddress() + " contains illegal format.");
                     }
 
                     break;
             }
+            FarmerList farmerList = FarmerList.builder()
+                    .cuFarmerID(cuid)
+                    .unitNoEUJAS(unitNoEUJAS)
+                    .farCodeEUJAS(farmerCode)
+                    .unitNoNOP(unitNoNOP)
+                    .farCodeNOP(farCodeNOP)
+                    .farmerName(farmerName)
+                    .farmName(farmName)
+                    .plotCode(plotCode)
+                    .totalArea(totalArea)
+                    .gps(gps)
+                    .address(address)
+                    .city(city)
+                    .dateCert(dateCert)
+                    .aplyRetrospe(aplyRetrospe == "yes" ? 1 : 0)
+                    .certification(certification)
+                    .fertilizer(fertilizer)
+                    .ferUseDate(ferUseDate)
+                    .dateConversion(dateConversion)
+                    .dateOrganic(dateOrganic)
+                    .eujasField(eujasField)
+                    .eujasHarvest(eujasHarvest)
+                    .usdaField(usdaField)
+                    .usdaHarvest(usdaHarvest).build();
+            farmerLists.add(farmerList);
 
         }
     }
 
     //    get crop from db
-    private Crop getCrop(Cell cell , List<String> errorList) {
-        String cropName = cell.getStringCellValue().trim();
-        log.debug("checking crop " + cropName + " on db");
-        return cropRepository
-                .findByCropName(cropName)
-                .orElseGet(
-                        () -> {
-                            errorList.add(cell.getAddress() + "(" + cropName + ") must be valid existing crop");
-                            return null;
-                        });
+    private Crop getCrop(String name) {
+        log.debug("checking crop " + name + " on db");
+        return cropRepository.findByCropName(name).orElse(null);
     }
 
-    private void cellNameValidation(Cell cell ,
-                                    String name ,
-                                    List<String> errorList) {
+
+    private void tableHeaderNameValidation(Cell cell ,
+                                           String name ,
+                                           List<String> errorList) {
         if (!cell.toString().equalsIgnoreCase(name)) {
-            errorList.add(cell.getAddress() + " must be " + name);
+            errorList.add(cell.getAddress() + ":invalid table header " + name);
         }
         log.debug("cell 1 " + cell);
     }

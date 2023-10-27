@@ -1,6 +1,6 @@
 package com.controlunion.excelUploader.model;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -9,12 +9,15 @@ import java.util.Date;
 @Entity
 @Table(name = "farmerlist")
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FarmerList {
     @Id
-    private int listid;
+    private Long listid;
 
     @Column(name = "cufarmerID")
-    private int cuFarmerID;
+    private Long cuFarmerID;
 
     @Column(name = "proID")
     private int proID;
@@ -44,7 +47,7 @@ public class FarmerList {
     private String farmerName;
 
     @Column(name = "totalArea")
-    private BigDecimal totalArea;
+    private Double totalArea;
 
     @Column(name = "city", columnDefinition = "varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL")
     private String city;
