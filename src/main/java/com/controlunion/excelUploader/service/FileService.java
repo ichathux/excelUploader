@@ -71,6 +71,7 @@ public class FileService {
 
         try (XSSFWorkbook workbook = new XSSFWorkbook(Files.newInputStream(temp.toPath()))) {
             Sheet sheet = workbook.getSheetAt(0); // Assuming the data is on the first sheet
+            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
             for (Row row : sheet) {
                 if (row.getCell(0) == null) {
                     break;
@@ -128,7 +129,7 @@ public class FileService {
                                 userMap ,
                                 row.cellIterator() ,
                                 cropMapping ,
-                                workbook,
+                                evaluator,
                                 farmerLists);
                         break;
 
@@ -153,8 +154,8 @@ public class FileService {
             return ResponseEntity.badRequest().body(errorList);
         }
 //        System.out.println(farmerLists);
-        saveFarmerListOnDB(farmerLists);
-        return ResponseEntity.ok().build();
+//        saveFarmerListOnDB(farmerLists);
+        return ResponseEntity.ok().body(farmerLists);
     }
     private void saveFarmerListOnDB(List<FarmerList> farmerLists){
         farmerlistRepository.saveAll(farmerLists);
@@ -269,7 +270,7 @@ public class FileService {
                                    HashMap<String, ArrayList<String>> userMap ,
                                    Iterator<Cell> cellIterator ,
                                    Map<Integer, Crop> cropMapping ,
-                                   Workbook workbook,
+                                   FormulaEvaluator evaluator,
                                    List<FarmerList> farmerLists) {
 
         String unitNoEUJAS= null;
@@ -312,10 +313,7 @@ public class FileService {
                 continue;
             }
             if (cell.getCellType() == CellType.FORMULA) {
-                log.info("**********Formular*********" + cell.getAddress());
-                FormulaEvaluator evaluator = workbook
-                        .getCreationHelper()
-                        .createFormulaEvaluator();
+                log.debug("**********Formular*********" + cell.getAddress());
                 CellValue cellValue = evaluator.evaluate(cell);
                 String result = cellValue.formatAsString();
                 cell.setCellValue(result);
