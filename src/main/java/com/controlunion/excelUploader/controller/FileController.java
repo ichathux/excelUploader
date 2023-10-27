@@ -17,14 +17,20 @@ public class FileController {
         this.fileService = fileService;
     }
 
+    /**
+     *
+     * @param file (MultipartFile file )
+     * @return
+     */
+
     @PostMapping(value = "upload", consumes = MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity excelUpload(@RequestPart("file") MultipartFile file){
         return fileService.uploadExcelFile(file);
     }
 
-    @GetMapping("findAll")
-    public ResponseEntity getAllCrops(){
-        fileService.getAllCrops();
-        return ResponseEntity.ok().build();
-    }
+//    @GetMapping("findAll")
+//    public ResponseEntity getAllCrops(){
+//        fileService.getAllCrops();
+//        return ResponseEntity.ok().build();
+//    }
 }
