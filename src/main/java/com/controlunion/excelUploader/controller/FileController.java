@@ -28,9 +28,9 @@ public class FileController {
         return fileService.uploadExcelFile(file);
     }
 
-//    @GetMapping("findAll")
-//    public ResponseEntity getAllCrops(){
-//        fileService.getAllCrops();
-//        return ResponseEntity.ok().build();
-//    }
+    @GetMapping("findAll")
+    public ResponseEntity getAllCrops(){
+        fileService.getAllCrops();
+        return ResponseEntity.ok().build();
+    }
 }
