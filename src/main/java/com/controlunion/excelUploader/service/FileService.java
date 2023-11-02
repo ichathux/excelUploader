@@ -46,10 +46,12 @@ public class FileService {
         startTime = System.currentTimeMillis();
         List<String> errorList = new ArrayList<>();
         if (file.isEmpty()) {
+            errorList.add("File is not present");
             return ResponseEntity.badRequest().body("File is not present");
         }
         if (!isFileExcel(file)) {
-            return ResponseEntity.badRequest().body("File format not support. It must be .xls or .xlsx");
+            errorList.add("File format not support. It must be .xls or .xlsx");
+            return ResponseEntity.badRequest().body(errorList);
         }
         return readFile(file, errorList);
 
@@ -87,13 +89,8 @@ public class FileService {
                 log.info("**********reading row : " + rowNumber + " excel row : " + row.getRowNum());
                 System.out.println(row);
 
-                System.out.println(excelProperties.getHeader1().size());
-                if (row.getPhysicalNumberOfCells() == excelProperties.getHeader1().size()){
-                    System.out.println("*****************table headers");
-                }
+
                 if (!checkRowContainNullValues(row)){
-//                    System.out.println("Empty row");
-//                    errorList.add("Row : " + (row.getRowNum() + 1) + " " + Errors.EMPTY_ROW.getName());
                     continue looping;
                 }
                 System.out.println("processing-1");
@@ -109,42 +106,79 @@ public class FileService {
                 }
                 System.out.println("processing-3");
                 lastrowNo = row.getRowNum();
+                if (rowNumber == 0){
+                    Cell cell = row.getCell(0);
+                    if (!isTableHeaderNameInvalid(cell,
+                            excelProperties.getAuditDetails().get(rowNumber))) {
+                        rowNumber++;
+                        continue looping;
+                    }else{
+                        errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
+                        rowNumber++;
+                        continue looping;
+                    }
+                }
+                if (rowNumber == 1){
+                    Cell cell = row.getCell(0);
+                    if (!isTableHeaderNameInvalid(cell,
+                            excelProperties.getAuditDetails().get(rowNumber))) {
+                        rowNumber++;
+                        continue looping;
+                    }else{
+                        errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
+                        rowNumber++;
+                        continue looping;
+                    }
+                }
+                if (rowNumber == 2){
+                    Cell cell = row.getCell(0);
+                    if (!isTableHeaderNameInvalid(cell,
+                            excelProperties.getAuditDetails().get(rowNumber))) {
+                        rowNumber++;
+                        continue looping;
+                    }else{
+                        errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
+                        rowNumber++;
+                        continue looping;
+                    }
+                }
+
                 switch (rowNumber) {
-                    case 0:
-                        log.info("validating Project Name : ");
-                        Cell cell = row.getCell(0);
-                        if (isTableHeaderNameInvalid(cell,
-                                excelProperties.getAuditDetails().get(rowNumber))) {
-                            if (cell.getCellType() == CellType.STRING) {
-                                if (!isTableHeaderNameInvalid(cell, excelProperties.getAuditDetails().get(row.getRowNum()))) {
-                                    errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
-                                }
-                            } else {
-                                errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
-                                continue looping;
-                            }
-
-                        }
-                        break;
-                    case 1:
-                        log.info("validating Project Id : ");
-                        cell = row.getCell(0);
-                        if (isTableHeaderNameInvalid(cell,
-                                excelProperties.getAuditDetails().get(rowNumber))) {
-                            errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
-                            continue looping;
-                        }
-                        break;
-                    case 2:
-                        log.info("validating Year : ");
-                        cell = row.getCell(0);
-                        if (isTableHeaderNameInvalid(cell,
-                                excelProperties.getAuditDetails().get(rowNumber))) {
-                            errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
-                            continue looping;
-                        }
-
-                        break;
+//                    case 0:
+//                        log.info("validating Project Name : ");
+//                        Cell cell = row.getCell(0);
+//                        if (isTableHeaderNameInvalid(cell,
+//                                excelProperties.getAuditDetails().get(rowNumber))) {
+//                            if (cell.getCellType() == CellType.STRING) {
+//                                if (!isTableHeaderNameInvalid(cell, excelProperties.getAuditDetails().get(row.getRowNum()))) {
+//                                    errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
+//                                }
+//                            } else {
+//                                errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
+//                                continue looping;
+//                            }
+//
+//                        }
+//                        break;
+//                    case 1:
+//                        log.info("validating Project Id : ");
+//                        cell = row.getCell(0);
+//                        if (isTableHeaderNameInvalid(cell,
+//                                excelProperties.getAuditDetails().get(rowNumber))) {
+//                            errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
+//                            continue looping;
+//                        }
+//                        break;
+//                    case 2:
+//                        log.info("validating Year : ");
+//                        cell = row.getCell(0);
+//                        if (isTableHeaderNameInvalid(cell,
+//                                excelProperties.getAuditDetails().get(rowNumber))) {
+//                            errorList.add(cell.getAddress().toString() + " must be " + excelProperties.getAuditDetails().get(rowNumber));
+//                            continue looping;
+//                        }
+//
+//                        break;
                     case 3:
                         log.info("validating 1st level headers start");
                         if (row.getPhysicalNumberOfCells() < tableTopLevelHeaders.size()) {
