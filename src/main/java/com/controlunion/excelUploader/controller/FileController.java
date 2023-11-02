@@ -1,6 +1,8 @@
 package com.controlunion.excelUploader.controller;
 
+import com.controlunion.excelUploader.service.CropService;
 import com.controlunion.excelUploader.service.FileService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,13 +11,11 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @RestController
 @RequestMapping("api/file/v1/")
+@RequiredArgsConstructor
 public class FileController {
 
     private final FileService fileService;
-
-    public FileController(FileService fileService) {
-        this.fileService = fileService;
-    }
+    private final CropService cropService;
 
     /**
      *
@@ -30,7 +30,7 @@ public class FileController {
 
     @GetMapping("findAll")
     public ResponseEntity getAllCrops(){
-        fileService.getAllCrops();
+        cropService.getAllCrops();
         return ResponseEntity.ok().build();
     }
 }

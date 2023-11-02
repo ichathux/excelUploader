@@ -8,11 +8,20 @@ public enum Errors {
     REQUIRED_TEXT_VALUE("must be TEXT"),
     REQUIRED_NUMBER_VALUE("must be NUMBER"),
     INVALID_CROP_NAME("must be valid existing crop"),
+    INVALID_FORMULA("contain invalid formula"),
     REQUIRED_CROP("You need add least one crop"),
-    DUPPLICATE_PLOT_VALUES("contains duplicate plot value")
+    DUPLICATE_PLOT_VALUES("contains duplicate plot value"),
+    CROP_NOT_VALID("crop not valid. (Duplicate or not existing.)"),
+    EMPTY_ROW("contain empty row")
     ;
 
-    Errors(String name) {
+    private final String name;
 
+    Errors(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
     }
 }
