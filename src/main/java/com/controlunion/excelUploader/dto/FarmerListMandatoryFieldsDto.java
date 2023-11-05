@@ -3,7 +3,7 @@ package com.controlunion.excelUploader.dto;
 import lombok.Data;
 
 @Data
-public class FarmerList_mandatory_fieldsDto {
+public class FarmerListMandatoryFieldsDto {
 
     private boolean isUnitNoEUJAS = false;
     private boolean isFarCodeEUJAS = false;
@@ -19,6 +19,6 @@ public class FarmerList_mandatory_fieldsDto {
     private boolean isEujasField = false;
     private boolean isEujasHarvest = false;
 
-    void checkManExists(FarmerList_mandatory_fieldsDto dto){
+    void checkManExists(FarmerListMandatoryFieldsDto dto){
     }
 }

@@ -1,2 +1,4 @@
-package com.controlunion.excelUploader.dto;public class CropDto {
+package com.controlunion.excelUploader.dto;
+
+public class CropDto {
 }
