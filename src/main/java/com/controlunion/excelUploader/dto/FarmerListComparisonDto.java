@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Data
@@ -16,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FarmerListComparisonDto {
-    private FarmerList farmerListList;
-    private FarmerListFinal farmerListCrops;
+    private HashMap<String, FarmerList> map1;
+    private HashMap<String, FarmerListFinal> map2;
+    private HashMap<String, Integer> cuidVsFarmarCode;
+
 }

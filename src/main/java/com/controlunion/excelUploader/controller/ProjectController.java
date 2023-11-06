@@ -1,6 +1,7 @@
 package com.controlunion.excelUploader.controller;
 
 
+import com.controlunion.excelUploader.dto.ProjectDto;
 import com.controlunion.excelUploader.model.Projects;
 import com.controlunion.excelUploader.repository.ProjectRepository;
 import com.controlunion.excelUploader.service.ProjectService;
@@ -26,7 +27,7 @@ public class ProjectController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Projects>> searchProject(@RequestParam("name") String name){
+    public ResponseEntity<List<ProjectDto>> searchProject(@RequestParam("name") String name){
         return projectService.getProjectsByName(name);
     }
 }

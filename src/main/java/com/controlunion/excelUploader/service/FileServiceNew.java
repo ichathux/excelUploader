@@ -1,14 +1,12 @@
 package com.controlunion.excelUploader.service;
 
 import com.controlunion.excelUploader.config.ExcelFilePropertiesConfig;
+import com.controlunion.excelUploader.dto.ChangesDto;
 import com.controlunion.excelUploader.dto.ExcelErrorResponse;
 import com.controlunion.excelUploader.dto.FarmerListComparisonDto;
 import com.controlunion.excelUploader.dto.FarmerListMandatoryFieldsDto;
 import com.controlunion.excelUploader.enums.Errors;
-import com.controlunion.excelUploader.model.Crop;
-import com.controlunion.excelUploader.model.FarmerList;
-import com.controlunion.excelUploader.model.FarmerListCrop;
-import com.controlunion.excelUploader.model.FarmerListFinal;
+import com.controlunion.excelUploader.model.*;
 import com.controlunion.excelUploader.repository.FarmerlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -93,7 +91,6 @@ public class FileServiceNew {
             log.error(className + ".readFile : Audit headers errors " + errorList);
             final Iterator<Row> iterator = sheet.iterator();
             Map<Integer, Crop> cropMapping = new LinkedHashMap<>();
-
             Row row = findTableStart(iterator, errorList, rowNumber + 1);
             log.info(className + ".readFile : returned row number " + rowNumber);
             log.error(className + ".readFile : until table start errors " + errorList);
@@ -103,8 +100,8 @@ public class FileServiceNew {
             validate2ndLevelHeaders(row, errorList, cropMapping, sheet);
             FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
             iterator.next();
-            farmerLists = readAuditData(iterator, cropMapping, errorList, evaluator, projectId, auditId, proId);
-
+            FarmerListComparisonDto farmerListComparisonDto = readAuditData(iterator, cropMapping, errorList, evaluator, projectId, auditId, proId);
+            makeComparison(farmerListComparisonDto);
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println(e.getMessage());
@@ -118,13 +115,13 @@ public class FileServiceNew {
         return ResponseEntity.ok().body("done");
     }
 
-    private List<FarmerList> readAuditData(Iterator<Row> iterator,
-                                           Map<Integer, Crop> cropMapping,
-                                           List<ExcelErrorResponse> errorList,
-                                           FormulaEvaluator evaluator,
-                                           int projectId,
-                                           int auditId,
-                                           int proId) {
+    private FarmerListComparisonDto readAuditData(Iterator<Row> iterator,
+                                                  Map<Integer, Crop> cropMapping,
+                                                  List<ExcelErrorResponse> errorList,
+                                                  FormulaEvaluator evaluator,
+                                                  int projectId,
+                                                  int auditId,
+                                                  int proId) {
 
         HashMap<String, ArrayList<String>> userMap = new HashMap<>(); // store farmer's plots
         java.sql.Date dateCert = null;
@@ -140,9 +137,12 @@ public class FileServiceNew {
                     .error(Errors.REQUIRED_CROP.getName())
                     .build());
         }
-        List<FarmerList> farmerListList = new ArrayList<>();
-        List<FarmerListComparisonDto> farmerListComparisonDto = new ArrayList<>();
-        FarmerListFinal farmerListFinal = null;
+//        List<FarmerList> farmerListList = new ArrayList<>();
+//        List<FarmerListComparisonDto> farmerListComparisonDto = new ArrayList<>();
+        HashMap<String, FarmerListFinal> farmarCodeMappingWithFarmListFinal = new LinkedHashMap<>();
+        HashMap<String, FarmerList> farmarCodeMappingWithFarmList = new LinkedHashMap<>();
+        HashMap<String, Integer> farmerCodeVsCuid = new LinkedHashMap<>();
+//        List<FarmerListFinal> farmerListFinal = null;
         while (iterator.hasNext()) {
             System.out.println("*********************************new Row***********************");
             Row row = iterator.next();
@@ -201,30 +201,147 @@ public class FileServiceNew {
                         break;
                     case 1:
                         farmerList.setUnitNoEUJAS(convertCellValueToStringValue(cell));
-//                        unitNoEUJAS = convertCellValueToStringValue(cell);
                         mandatory_fields.setUnitNoEUJAS(true);
                         log.info(className + ".readAuditData : Unit Number for EU / JAS : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 2:
-                        farmerCode = convertCellValueToStringValue(cell);
-                        farmerList.setFarCodeEUJAS(farmerCode);
-                        mandatory_fields.setFarCodeEUJAS(true);
+                        farmerCode = convertCellValueToStringValue(cell); //getting cell value form farmerCode
+                        farmerList.setFarCodeEUJAS(farmerCode);     //sett farmerCode for farmerList object
+                        mandatory_fields.setFarCodeEUJAS(true);     //set mandatory field contain
+                        List<FarmerListFinal> farmerListFinal;
+                        try {
+                            String finalPlotCode = convertCellValueToStringValue(row.getCell(7));
+                            log.info("getting plot code early " + finalPlotCode);
+                            farmerListFinal = farmerListFinalService.getFarmerByCodeAndProIdAndAuditId(farmerCode, proId, auditId);
+                            FarmerListFinal ff = farmerListFinal
+                                    .stream().filter(f -> f.getPlotCode().equals(finalPlotCode))
+                                    .findFirst()
+                                    .orElse(null);
 
-                        if (row.getCell(0) == null || row.getCell(0).getStringCellValue().trim().equals("")) {
-                            System.out.println("cuid not present");
-                            farmerListFinal = farmerListFinalService.getFarmerByCode(farmerCode, proId);
-                            System.out.println(cuid);
-                            if (farmerListFinal == null) {
-                                isNewFarmer = true;
-                                log.info(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : creating cuid");
-                                cuid = farmerListFinalService.createCuid();
-                                log.info(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : new cuid - " + cuid);
+                            if (row.getCell(0) == null || convertCellValueToStringValue(cell).equals("")) {
+                                log.info("cuid not contain in excel sheet");
+                                if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                    cuid = farmerCodeVsCuid.get(farmerCode);
+                                    log.info("cuid already created for : " + farmerCode + " : cuid " + cuid);
+                                } else {
+//                                    farmerListFinal = farmerListFinalService.getFarmerByCodeAndProId(farmerCode, proId);
+//                                    System.out.println(farmerListFinal);
+                                    if (farmerListFinal == null) {
+                                        isNewFarmer = true;
+                                        cuid = farmerListFinalService.createCuid();
+                                        farmerCodeVsCuid.put(farmerCode, cuid);
+                                        log.info("cuid created for : " + farmerCode + " : cuid " + cuid);
+                                    } else {
+//                                        FarmerListFinal ff = farmerListFinal
+//                                                .stream().filter(f -> f.getPlotCode() == finalPlotCode)
+//                                                .findFirst()
+//                                                .orElse(null);
+                                        cuid = farmerListFinal.get(0).getCufarmerID();
+                                        log.info("founb cuid for : " + farmerCode + " : cuid " + cuid);
+//                                    farmarCodeMappingWithFarmListFinal.put(farmerCode,ff); //todo
+                                    }
+//                                if (farmarCodeMappingWithFarmListFinal.containsKey(farmerCode)) {
+//                                    farmerListFinal = farmarCodeMappingWithFarmListFinal.get(farmerCode);
+//                                    if (farmerListFinal.get(0).getFarCodeEUJAS() == null) {
+//                                        isNewFarmer = true;
+//                                    }
+//                                    cuid = farmarCodeMappingWithFarmListFinal.get(farmerCode).get(0).getCufarmerID();
+//                                } else {
+//
+//                                    if (farmerListFinal == null) {
+//                                        FarmerListFinal aFinal = new FarmerListFinal();
+//                                        cuid = farmerListFinalService.createCuid();
+//                                        aFinal.setCufarmerID(cuid);
+//                                        isNewFarmer = true;
+//                                    } else {
+//                                        cuid = farmerListFinal.get(0).getCufarmerID();
+//                                    }
+//                                    farmarCodeMappingWithFarmListFinal.put(farmerCode, farmerListFinal);
+//                                }
+                                    farmerCodeVsCuid.put(farmerCode, cuid);
+                                }
+                                if (!isNewFarmer) {
+                                    errorList.add(ExcelErrorResponse.builder()
+                                            .location("Row " + (row.getRowNum() + 1))
+                                            .error("cuid must be insert")
+                                            .correctValue(cuid + "").build());
+                                    log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : need to insert - " + cuid);
+                                }
                             } else {
-                                cuid = farmerListFinal.getCufarmerID();
+                                if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                    if (cuid != farmerCodeVsCuid.get(farmerCode)) {
+                                        errorList.add(ExcelErrorResponse.builder()
+                                                .error("cuid not matched")
+                                                .location("Cell " + row.getCell(0).getAddress())
+                                                .errorValue(cuid + "")
+                                                .build());
+                                        log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : cuid used for another farmer - " + cuid);
+                                    } else {
+//                                        FarmerListFinal ff = farmerListFinal
+//                                                .stream().filter(f -> f.getPlotCode() == finalPlotCode)
+//                                                .findFirst()
+//                                                .orElse(null);
+                                        System.out.println(ff.getFarmerName());
+                                        if (ff != null) {
+                                            farmarCodeMappingWithFarmListFinal.put(farmerCode + " plot " + plotCode, ff);
+                                        }
+                                    }
+                                } else {
+                                    if (farmerListFinal == null) {
+                                        errorList.add(ExcelErrorResponse.builder()
+                                                .location("Row " + (row.getRowNum() + 1))
+                                                .error("invalid cuid. selected farmer not contain in the database")
+                                                .build());
+                                        log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : need to insert - " + cuid);
+                                    } else {
+//                                        FarmerListFinal ff = farmerListFinal
+//                                                .stream().filter(f -> f.getPlotCode() == finalPlotCode)
+//                                                .findFirst()
+//                                                .orElse(null);
+                                        if (cuid != farmerListFinal.get(0).getCufarmerID()) {
+                                            errorList.add(ExcelErrorResponse.builder()
+                                                    .error("cuid not matched")
+                                                    .location("Cell " + row.getCell(0).getAddress())
+                                                    .errorValue(cuid + "")
+                                                    .build());
+                                            log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : cuid used for another farmer - " + cuid);
+                                        } else {
+                                            cuid = farmerListFinal.get(0).getCufarmerID();
+                                            farmerCodeVsCuid.put(farmerCode, cuid);
+                                            System.out.println(ff.getFarmerName());
+                                            if (ff != null) {
+                                                farmarCodeMappingWithFarmListFinal.put(farmerCode + " plot " + plotCode, ff);
+                                            }
+                                        }
+
+                                    }
+                                }
+//                            if (farmarCodeMappingWithFarmListFinal.containsKey(farmerCode)) {
+//                                farmerListFinal = farmarCodeMappingWithFarmListFinal.get(farmerCode);
+//                            } else {
+//                                farmerListFinal = farmerListFinalService.getFarmerListFinalByProjectIdAndCuid(cuid, proId);
+//                            }
+//
+//                            if (cuid != farmerListFinal.get(0).getCufarmerID()) {
+//                                errorList.add(ExcelErrorResponse.builder()
+//                                        .error("cuid not matched")
+//                                        .location("Cell " + row.getCell(0).getAddress())
+//                                        .errorValue(cuid + "")
+//                                        .build());
+//                                log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : cuid used for another farmer - " + cuid);
+//                            }
+//                            if (!farmerCodeVsCuid.containsKey(farmerCode)) {
+//                                farmerCodeVsCuid.put(farmerCode, cuid);
+//                            }
                             }
-                            log.info(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : cuid-" + cuid);
+
+                            log.info("created farmerlist final list");
+                        } catch (NullPointerException e) {
+                            log.error("null pointer occurred " + e.getMessage());
                         }
+
+
                         farmerList.setCufarmerID(cuid);
                         farmerList.setIsNew(isNewFarmer ? 1 : 0);
                         log.info(className + ".readAuditData : Farmer Code for EU / JAS : " + farmerCode);
@@ -270,7 +387,6 @@ public class FileServiceNew {
                         break;
                     case 8:
                         try {
-//                            totalArea = cell.getNumericCellValue();
                             farmerList.setTotalArea(cell.getNumericCellValue());
                             mandatory_fields.setTotalArea(true);
                             log.info(className + ".readAuditData : Total Area (Ha) : " + cell.getNumericCellValue());
@@ -282,20 +398,17 @@ public class FileServiceNew {
                         }
                         break;
                     case 9:
-//                        gps = convertCellValueToStringValue(cell);
                         farmerList.setGps(convertCellValueToStringValue(cell));
                         log.info(className + ".readAuditData : GPS : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 10:
-//                        address = convertCellValueToStringValue(cell);
                         farmerList.setAddress(convertCellValueToStringValue(cell));
                         log.info(className + ".readAuditData : Address/Village : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 11:
                         try {
-//                            city = convertCellValueToStringValue(cell);
                             farmerList.setCity(convertCellValueToStringValue(cell));
                             mandatory_fields.setCity(true);
                             log.info(className + ".readAuditData : City : " + convertCellValueToStringValue(cell));
@@ -309,7 +422,6 @@ public class FileServiceNew {
                         break;
                     case 12:
                         try {
-//                            dateCert = new java.sql.Date(cell.getDateCellValue().getTime());
                             farmerList.setDateCert(new java.sql.Date(cell.getDateCellValue().getTime()));
                             log.info(className + ".readAuditData : Application date for certification (yyyy-mm-dd) : " + dateCert);
                         } catch (IllegalStateException e) {
@@ -321,24 +433,20 @@ public class FileServiceNew {
                         break;
                     case 13:
                         farmerList.setAplyRetrospe(convertCellValueToStringValue(cell) == "yes" ? 1 : 0);
-//                        aplyRetrospe = convertCellValueToStringValue(cell);
                         log.info(className + ".readAuditData : Applying for Retrospective consideration (Yes/No) : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 14:
-//                        certification = convertCellValueToStringValue(cell);
                         farmerList.setCertification(convertCellValueToStringValue(cell));
                         log.info(className + ".readAuditData : Certifications : " + certification);
 
                         break;
                     case 15:
-//                        fertilizer = cell.getStringCellValue().trim();
                         farmerList.setFertilizer(convertCellValueToStringValue(cell));
                         log.info(className + ".readAuditData : Types of fertilizer, pesticide used : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 16:
-//                        ferUseDate = convertCellValueToStringValue(cell);
                         farmerList.setFerUseDate(convertCellValueToStringValue(cell));
                         log.info(className + ".readAuditData : Last date of use : " + convertCellValueToStringValue(cell));
                         break;
@@ -357,7 +465,6 @@ public class FileServiceNew {
                         break;
                     case 18:
                         try {
-//                            dateOrganic = new Date(cell.getDateCellValue().getTime());
                             farmerList.setDateorganic(new Date(cell.getDateCellValue().getTime()));
                             mandatory_fields.setStartingDateOrg(true);
                             log.info(className + "readAuditData : Starting date of Organic Period (yyyy-mm-dd) : " + new Date(cell.getDateCellValue().getTime()));
@@ -370,87 +477,28 @@ public class FileServiceNew {
                         }
                         break;
                     case 19:
-//                    try {
-//                        eujasField = convertCellValueToStringValue(cell);
                         farmerList.setEujas_field(convertCellValueToStringValue(cell));
                         mandatory_fields.setEujasField(true);
                         log.info(className + "readAuditData : Field Status EU/JAS ic1/ic2/ic3/org : " + convertCellValueToStringValue(cell));
-//                    } catch (IllegalStateException e) {
-//                        errorList.add(cell.getAddress() + " contains illegal format.");
-//                    }
 
                         break;
                     case 20:
-//                    try {
-//                        eujasHarvest = convertCellValueToStringValue(cell);
                         farmerList.setEujas_harvest(convertCellValueToStringValue(cell));
                         mandatory_fields.setEujasHarvest(true);
                         log.info(className + "readAuditData : Harvest status EU/JAS conv/ic/org : " + convertCellValueToStringValue(cell));
-//                    } catch (IllegalStateException e) {
-//                        errorList.add(cell.getAddress() + " contains illegal format.");
-//                    }
+
                         break;
                     case 21:
-//                    try {
-//                        usdaField = convertCellValueToStringValue(cell);
                         farmerList.setUsda_field(convertCellValueToStringValue(cell));
                         log.info(className + "readAuditData : Field status NOP ic1/ic2/ic3/org : " + convertCellValueToStringValue(cell));
-//                    } catch (IllegalStateException e) {
-//                        errorList.add(cell.getAddress() + " contains illegal format.");
-//                    }
                         break;
                     case 22:
-//                        usdaHarvest = convertCellValueToStringValue(cell);
                         farmerList.setUsda_harvest(convertCellValueToStringValue(cell));
                         log.info(className + "readAuditData : Harvest status NOP conv/org : " + convertCellValueToStringValue(cell));
                         break;
 //                    reading crop section
                     default:
-                        try {
-                            if (cropMapping.containsKey(cell.getColumnIndex())) {
-                                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++reading : " + cropMapping.get(cell.getColumnIndex()).getCropName());
-
-                                Crop crop = cropMapping.get(cell.getColumnIndex());
-                                FarmerListCrop farmerListCrop = new FarmerListCrop();
-                                farmerListCrop.setCropID(crop.getCropID());
-                                farmerListCrop.setPlotCode(plotCode);
-                                farmerListCrop.setCufarmerID(cuid);
-                                farmerListCrop.setFarmerList(farmerList);
-
-                                int currentCellStart = cell.getColumnIndex();
-                                System.out.println("Start from - " + cell.getAddress() + " : " + currentCellStart);
-                                for (int i = 0; i < excelFileProperties.getHeader3().size(); i++) {
-                                    try {
-                                        System.out.println(crop.getCropName() + " : " + row.getCell(currentCellStart + i).getAddress());
-                                        switch (i) {
-                                            case 0:
-                                                farmerListCrop.setNoOfPlant(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
-                                                break;
-                                            case 1:
-                                                farmerListCrop.setEstiYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
-                                                break;
-                                            case 2:
-                                                farmerListCrop.setRealYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
-                                                break;
-                                            case 3:
-                                                farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
-                                                break;
-
-                                        }
-                                    } catch (NullPointerException e) {
-
-                                    }
-                                }
-                                farmerListCropList.add(farmerListCrop);
-                            }
-                        } catch (IllegalStateException e) {
-                            log.error("Cell:" + cell.getAddress() + " : " + e.getMessage());
-                            e.printStackTrace();
-                            errorList.add(ExcelErrorResponse.builder()
-                                    .location("Cell:" + cell.getAddress())
-                                    .error("contains illegal format.")
-                                    .build());
-                        }
+                        readingCropDatas(cropMapping, errorList, cuid, plotCode, row, farmerList, farmerListCropList, cell);
 
                         break;
                 }
@@ -461,31 +509,175 @@ public class FileServiceNew {
             farmerList.setUser("isuru");
             farmerList.setChngCropdata("");
             farmerList.setChngFarmdata("");
-            farmerList.setSysTimeStamp(new Date(new java.util.Date().getTime()));
-            farmerList.setProID(projectId);
+
+            farmerList.setSysTimeStamp(new Date(System.currentTimeMillis()));
+
+            farmerList.setProID(proId);
             farmerList.setAuditID(auditId);
-            farmerList.setFarmerListCropList(farmerListCropList);
             farmerList.setInspected(0);
-            farmerListList.add(farmerList);
-            System.out.println(auditId);
-            System.out.println(projectId);
-            if (!isNewFarmer) {
-                if (farmerListFinal != null) {
-                    farmerListComparisonDto.add(new FarmerListComparisonDto(farmerList, farmerListFinal));
-                }
-            }
+
+            log.info("adding farmlist to hashmap " + farmerCode);
+
+//            List<FarmerList> f;
+//
+//            if (!farmarCodeMappingWithFarmList.containsKey(farmerCode)) {
+//                f = new ArrayList<>();
+//            } else {
+//                f = farmarCodeMappingWithFarmList.get(farmerCode);
+//            }
+//            f.add(farmerList);
+//            farmarCodeMappingWithFarmList.put(farmerCode, f);
+            farmarCodeMappingWithFarmList.put(farmerCode + " plot " + plotCode, farmerList);
+
+//            farmerListList.add(farmerList);
+
         }
-        if (errorList.isEmpty()) {
-            makeComparison(farmerListComparisonDto);
-        }
-        return farmerListList;
+
+        return new FarmerListComparisonDto(farmarCodeMappingWithFarmList, farmarCodeMappingWithFarmListFinal, farmerCodeVsCuid);
 
     }
 
-    private void makeComparison(List<FarmerListComparisonDto> farmerListComparisonDto) {
-        for (FarmerListComparisonDto far : farmerListComparisonDto) {
+    private void readingCropDatas(Map<Integer, Crop> cropMapping, List<ExcelErrorResponse> errorList, int cuid, String plotCode, Row row, FarmerList farmerList, List<FarmerListCrop> farmerListCropList, Cell cell) {
+        try {
+            if (cropMapping.containsKey(cell.getColumnIndex())) {
+                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++reading : " + cropMapping.get(cell.getColumnIndex()).getCropName());
 
+                Crop crop = cropMapping.get(cell.getColumnIndex());
+                FarmerListCrop farmerListCrop = new FarmerListCrop();
+                farmerListCrop.setCropID(crop.getCropID());
+                farmerListCrop.setPlotCode(plotCode);
+                farmerListCrop.setCufarmerID(cuid);
+                farmerListCrop.setFarmerList(farmerList);
+
+                int currentCellStart = cell.getColumnIndex();
+                System.out.println("Start from - " + cell.getAddress() + " : " + currentCellStart);
+                for (int i = 0; i < excelFileProperties.getHeader3().size(); i++) {
+                    try {
+                        System.out.println(crop.getCropName() + " : " + row.getCell(currentCellStart + i).getAddress());
+                        switch (i) {
+                            case 0:
+                                farmerListCrop.setNoOfPlant(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                break;
+                            case 1:
+                                farmerListCrop.setEstiYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                break;
+                            case 2:
+                                farmerListCrop.setRealYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                break;
+                            case 3:
+                                farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                break;
+
+                        }
+                    } catch (NullPointerException e) {
+
+                    }
+                }
+                farmerListCropList.add(farmerListCrop);
+            }
+        } catch (IllegalStateException e) {
+            log.error("Cell:" + cell.getAddress() + " : " + e.getMessage());
+            e.printStackTrace();
+            errorList.add(ExcelErrorResponse.builder()
+                    .location("Cell:" + cell.getAddress())
+                    .error("contains illegal format.")
+                    .build());
         }
+    }
+
+    private void makeComparison(FarmerListComparisonDto dto) {
+        log.info("start comparison with farmlist with farmlist_final");
+        System.out.println("map 1");
+
+        ArrayList<FarmerList> farmerLists = new ArrayList<>();
+        for (Map.Entry<String, FarmerList> entry : dto.getMap1().entrySet()) {
+            compareFarmData(entry, dto.getMap2(), farmerLists);
+        }
+        System.out.println(dto.getMap2().size());
+        System.out.println(dto.getCuidVsFarmarCode());
+    }
+
+    private void compareFarmData(Map.Entry<String, FarmerList> entry,
+                                 HashMap<String, FarmerListFinal> farmerListFinalHashMap,
+                                 ArrayList<FarmerList> farmerLists) {
+
+        String farmerCode = entry.getKey().split("plot")[0];
+        String plot = entry.getKey().split("plot")[1];
+
+        HashMap<String, ChangesDto> changesMap = new LinkedHashMap<>();
+
+        FarmerListFinal farmerListFinal = farmerListFinalHashMap.get(entry.getKey());
+        FarmerList farmerList = entry.getValue();
+
+        if (!farmerListFinalHashMap.containsKey(entry.getKey())) {
+            changesMap.put("new plot", new ChangesDto(plot));
+        } else {
+
+            if (!farmerListFinal.getFarmerName().equals(farmerList.getFarmerName())) {
+                changesMap.put("Farmer Name", new ChangesDto(farmerListFinal.getFarmerName(),farmerList.getFarmerName()));
+            }
+            if (!farmerListFinal.getFarmName().equals(farmerList.getFarmName())) {
+                changesMap.put("Name of the Farm", new ChangesDto(farmerListFinal.getFarmName(),farmerList.getFarmName()));
+            }
+            if (farmerListFinal.getTotalArea() != farmerList.getTotalArea()) {
+                changesMap.put("Total Area (Ha)", new ChangesDto(String.valueOf(farmerListFinal.getTotalArea()),String.valueOf(farmerList.getTotalArea())));
+            }
+            if (!farmerListFinal.getGps().equals(farmerList.getGps())) {
+                changesMap.put("GPS", new ChangesDto(farmerListFinal.getGps(),farmerList.getGps()));
+            }
+            if (!farmerListFinal.getAddress().equals(farmerList.getAddress())) {
+                changesMap.put("Address/Village", new ChangesDto(farmerListFinal.getAddress(),farmerList.getAddress()));
+            }
+            if (!farmerListFinal.getCity().equals(farmerList.getCity())) {
+                changesMap.put("City", new ChangesDto(farmerListFinal.getCity(),farmerList.getCity()));
+            }
+            if (!farmerListFinal.getDateCert().equals(farmerList.getDateCert())) {
+                changesMap.put("Application date for certification (yyyy-mm-dd)", new ChangesDto(String.valueOf(farmerListFinal.getDateCert()),String.valueOf(farmerList.getDateCert())));
+            }
+            if (farmerListFinal.getAplyRetrospe() != farmerList.getAplyRetrospe()) {
+                changesMap.put("Applying for Retrospective consideration (Yes/No)", new ChangesDto(String.valueOf(farmerListFinal.getAplyRetrospe()),String.valueOf(farmerList.getAplyRetrospe())));
+            }
+            if (!farmerListFinal.getCertification().equals(farmerList.getCertification())) {
+                changesMap.put("Certifications",new ChangesDto(farmerListFinal.getCertification(),farmerList.getCertification()));
+            }
+            if (!farmerListFinal.getFertilizer().equals(farmerList.getFertilizer())) {
+                changesMap.put("Types of fertilizer, pesticide used", new ChangesDto(farmerListFinal.getFertilizer(),farmerList.getFertilizer()));
+            }
+            if (!farmerListFinal.getFerUseDate().equals(farmerList.getFerUseDate())) {
+                changesMap.put("Last date of use ", new ChangesDto(farmerListFinal.getFerUseDate(),farmerList.getFerUseDate()));
+            }
+            if (!farmerListFinal.getDateConfersion().equals(farmerList.getDateConfersion())) {
+                changesMap.put("Starting date of Conversion period (yyyy-mm-dd)",new ChangesDto(String.valueOf(farmerListFinal.getDateConfersion()),String.valueOf(farmerList.getDateConfersion())));
+            }
+            if (!farmerListFinal.getDateorganic().equals(farmerList.getDateorganic())) {
+                changesMap.put("Starting date of Organic Period (yyyy-mm-dd)", new ChangesDto(String.valueOf(farmerListFinal.getDateorganic()),String.valueOf(farmerList.getDateorganic())));
+            }
+            if (!farmerListFinal.getEujas_field().equals(farmerList.getEujas_field())) {
+                changesMap.put("Field Status EU/JAS ic1/ic2/ic3/org", new ChangesDto(farmerListFinal.getEujas_field(),farmerList.getEujas_field()));
+            }
+            if (!farmerListFinal.getEujas_harvest().equals(farmerList.getEujas_harvest())) {
+                changesMap.put("Harvest status EU/JAS conv/ic/org", new ChangesDto(farmerListFinal.getEujas_harvest(),farmerList.getEujas_harvest()));
+            }
+            if (!farmerListFinal.getUsda_field().equals(farmerList.getUsda_field())) {
+                changesMap.put("Field status NOP ic1/ic2/ic3/org", new ChangesDto(farmerListFinal.getUsda_field(),farmerList.getUsda_field()));
+            }
+            if (!farmerListFinal.getUsda_harvest().equals(farmerList.getUsda_harvest())) {
+                changesMap.put("Harvest status NOP conv/org", new ChangesDto(farmerListFinal.getUsda_harvest(),farmerList.getUsda_harvest()));
+            }
+        }
+        System.out.println("changed map for farmer : "+farmerCode+" : "+changesMap);
+//        compareCropsData(farmerListFinal.getFarmerListCropFinalList(),
+//                farmerList.getFarmerListCropList(),
+//                changesMap);
+        farmerLists.add(farmerList);
+
+    }
+
+    private void compareCropsData(List<FarmerListCropFinal> farmerListCropFinalList,
+                                  List<FarmerListCrop> farmerListCropList,
+                                  HashMap<String, ChangesDto> changesMap) {
+        System.out.println("old crop size : "+farmerListCropFinalList.size());
+        System.out.println("new crop size : "+farmerListCropList.size());
     }
 
 
@@ -618,7 +810,7 @@ public class FileServiceNew {
                     errorList.add(error);
                 }
             }
-            System.out.println(row);
+//            System.out.println(row);
 
             if (row.getRowNum() - rowNumber > 0) {
                 log.error("Row " + row.getRowNum() + " : found " + (row.getRowNum() - rowNumber) + " empty row(s)");
@@ -693,8 +885,8 @@ public class FileServiceNew {
     }
 
     private void validateTableHeaders(Iterator<Row> rowIterator, Row row, List<ExcelErrorResponse> errorList, int rowNumber) {
-        System.out.println("Starting row - ");
-        System.out.println(row);
+//        System.out.println("Starting row - ");
+//        System.out.println(row);
 
         Row row1 = rowIterator.next();
 

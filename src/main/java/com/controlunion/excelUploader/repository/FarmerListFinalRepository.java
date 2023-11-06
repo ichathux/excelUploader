@@ -8,12 +8,15 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface FarmerListFinalRepository extends JpaRepository<FarmerListFinal, FarmerListFinalID> {
 
-    Optional<FarmerListFinal> findTopFinalByFarCodeEUJASAndProID(String farmerCode, int proId);
+//    Optional<List<FarmerListFinal>> findAllByFarCodeEUJASAndProIDAndAuditID(String farmerCode, int proId, int auditID);
+    Optional<List<FarmerListFinal>> findAllByFarCodeEUJASAndProID(String farmerCode, int proId);
+    Optional<List<FarmerListFinal>> findAllByCufarmerIDAndProID(int cuFarmerId, int proId);
 //    int findTopCufarmerIDByFarCodeEUJAS(String farmerCode);
     Optional<Integer> findCufarmerIDByFarCodeEUJASAndProID(String farCodeEUJAS, int proId);
 

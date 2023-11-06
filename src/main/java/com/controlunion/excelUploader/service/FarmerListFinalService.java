@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -16,19 +17,19 @@ public class FarmerListFinalService {
     private final FarmerListFinalRepository farmerListFinalRepository;
     private final Random random = new Random();
 
-    public FarmerListFinal isExistingFarmer(String farmerCodeEUJAS, int proId){
-
-        return getFarmerByCode(farmerCodeEUJAS, proId);
-    }
-
-    public int checkIsNewFarmer(String farmerCode, int proId) {
-        FarmerListFinal farmerListFinal = getFarmerByCode(farmerCode, proId);
-        if (farmerListFinal == null) {
-            return createCuid();
-        } else {
-            return farmerListFinal.getCufarmerID();
-        }
-    }
+//    public FarmerListFinal isExistingFarmer(String farmerCodeEUJAS, int proId){
+//
+//        return getFarmerByCodeAndProId(farmerCodeEUJAS, proId);
+//    }
+//
+//    public int checkIsNewFarmer(String farmerCode, int proId) {
+//        FarmerListFinal farmerListFinal = getFarmerByCodeAndProId(farmerCode, proId);
+//        if (farmerListFinal == null) {
+//            return createCuid();
+//        } else {
+//            return farmerListFinal.getCufarmerID();
+//        }
+//    }
 
     public int createCuid() {
         int min = 100_000_000;
@@ -46,28 +47,35 @@ public class FarmerListFinalService {
         return farmerListFinalRepository.existsByCufarmerID(cuid);
     }
 
-    public FarmerListFinal getFarmerByCode(String farmerCodeEUJAS, int proId) {
-        log.info(getClass().getName()+".checkCUIDExist: check farmer already exist "+farmerCodeEUJAS);
+    public List<FarmerListFinal> getFarmerByCodeAndProIdAndAuditId(String farmerCodeEUJAS,
+                                                                   int proId,
+                                                                   int auditId) {
+        log.info(getClass().getName()+".checkCUIDExist: check farmer already exist "+farmerCodeEUJAS+" proID : "+proId);
         try {
-//            FarmerListFinal farmerListFinal = farmerListFinalRepository.findTopFinalByFarCodeEUJASAndProID(farmerCodeEUJAS, proId).get();
-//            System.out.println(farmerListFinal.getFarmerName());
-            return farmerListFinalRepository.findTopFinalByFarCodeEUJASAndProID(farmerCodeEUJAS, proId).orElse(null);
+            List<FarmerListFinal> farmerListFinal = farmerListFinalRepository
+                    .findAllByFarCodeEUJASAndProID(farmerCodeEUJAS, proId).get();
+            log.info(getClass().getName()+".checkCUIDExist: farCodeEUJAS : "+farmerCodeEUJAS+" cuid : "+farmerListFinal.get(0).getCufarmerID());
+            return farmerListFinal;
         }catch (Exception e){
             e.getStackTrace();
+            log.info(getClass().getName()+".checkCUIDExist: farCodeEUJAS : "+farmerCodeEUJAS+" not exist ");
             return null;
         }
     }
 
-    public int getFarmerCUIDByFarmerCode(String farmerCOdeEUJAS, int proId){
-        log.info(getClass().getName()+".getFarmerCUIDByFarmerCode: getting cuid for "+farmerCOdeEUJAS);
-        try {
-            return getFarmerByCode(farmerCOdeEUJAS, proId).getCufarmerID();
-        }catch (Exception e){
-            log.error(getClass().getName()+".getFarmerCUIDByFarmerCode: getting cuid for "+farmerCOdeEUJAS+" : "+e.getMessage());
-            e.printStackTrace();
-            return 0;
-        }
+//    public int getFarmerCUIDByFarmerCode(String farmerCOdeEUJAS, int proId){
+//        log.info(getClass().getName()+".getFarmerCUIDByFarmerCode: getting cuid for "+farmerCOdeEUJAS);
+//        try {
+//            return getFarmerByCodeAndProId(farmerCOdeEUJAS, proId).getCufarmerID();
+//        }catch (Exception e){
+//            log.error(getClass().getName()+".getFarmerCUIDByFarmerCode: getting cuid for "+farmerCOdeEUJAS+" : "+e.getMessage());
+//            e.printStackTrace();
+//            return 0;
+//        }
+//    }
+
+
+    public List<FarmerListFinal> getFarmerListFinalByProjectIdAndCuid(int cufarmerId, int prodId) {
+        return farmerListFinalRepository.findAllByCufarmerIDAndProID(cufarmerId, prodId).orElse(null);
     }
-
-
 }
