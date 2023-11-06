@@ -49,9 +49,9 @@ public class FarmerListFinalService {
     public FarmerListFinal getFarmerByCode(String farmerCodeEUJAS, int proId) {
         log.info(getClass().getName()+".checkCUIDExist: check farmer already exist "+farmerCodeEUJAS);
         try {
-            FarmerListFinal farmerListFinal = farmerListFinalRepository.findTopFinalByFarCodeEUJASAndProID(farmerCodeEUJAS, proId).get();
-            System.out.println(farmerListFinal.getFarmerName());
-            return farmerListFinal;
+//            FarmerListFinal farmerListFinal = farmerListFinalRepository.findTopFinalByFarCodeEUJASAndProID(farmerCodeEUJAS, proId).get();
+//            System.out.println(farmerListFinal.getFarmerName());
+            return farmerListFinalRepository.findTopFinalByFarCodeEUJASAndProID(farmerCodeEUJAS, proId).orElse(null);
         }catch (Exception e){
             e.getStackTrace();
             return null;

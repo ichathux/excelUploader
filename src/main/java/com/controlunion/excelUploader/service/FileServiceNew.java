@@ -50,10 +50,18 @@ public class FileServiceNew {
         log.info("File recieved " + file.getOriginalFilename());
         List<ExcelErrorResponse> errorList = new ArrayList<>();
         if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File is not present");
+            errorList.add(ExcelErrorResponse.builder()
+                    .location("Uploaded file")
+                    .error("File is not present")
+                    .build());
+            return ResponseEntity.badRequest().body(errorList);
         }
         if (!isFileExcel(file)) {
-            return ResponseEntity.badRequest().body("File format not support. It must be .xls or .xlsx");
+            errorList.add(ExcelErrorResponse.builder()
+                    .location("Uploaded file")
+                    .error("File format not support. It must be .xls or .xlsx")
+                    .build());
+            return ResponseEntity.badRequest().body(errorList);
         }
         return readFile(file, errorList, projectId, auditId, projectName, proId);
 
@@ -205,13 +213,15 @@ public class FileServiceNew {
 
                         if (row.getCell(0) == null || row.getCell(0).getStringCellValue().trim().equals("")) {
                             System.out.println("cuid not present");
-                            cuid = farmerListFinalService.getFarmerCUIDByFarmerCode(farmerCode, proId);
+                            farmerListFinal = farmerListFinalService.getFarmerByCode(farmerCode, proId);
                             System.out.println(cuid);
-                            if (cuid == 0) {
+                            if (farmerListFinal == null) {
                                 isNewFarmer = true;
                                 log.info(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : creating cuid");
                                 cuid = farmerListFinalService.createCuid();
-                                log.info(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : new cuid - "+cuid);
+                                log.info(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : new cuid - " + cuid);
+                            } else {
+                                cuid = farmerListFinal.getCufarmerID();
                             }
                             log.info(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : cuid-" + cuid);
                         }
