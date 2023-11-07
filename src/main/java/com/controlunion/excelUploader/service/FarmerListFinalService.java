@@ -50,10 +50,10 @@ public class FarmerListFinalService {
     public List<FarmerListFinal> getFarmerByCodeAndProIdAndAuditId(String farmerCodeEUJAS,
                                                                    int proId,
                                                                    int auditId) {
-        log.info(getClass().getName()+".checkCUIDExist: check farmer already exist "+farmerCodeEUJAS+" proID : "+proId);
+        log.info(getClass().getName()+".checkCUIDExist: check farmer already exist "+farmerCodeEUJAS+" proID : "+proId+" auditId "+auditId);
         try {
             List<FarmerListFinal> farmerListFinal = farmerListFinalRepository
-                    .findAllByFarCodeEUJASAndProID(farmerCodeEUJAS, proId).get();
+                    .findAllByFarCodeEUJASAndProIDAndAuditID(farmerCodeEUJAS, proId, auditId).get();
             log.info(getClass().getName()+".checkCUIDExist: farCodeEUJAS : "+farmerCodeEUJAS+" cuid : "+farmerListFinal.get(0).getCufarmerID());
             return farmerListFinal;
         }catch (Exception e){

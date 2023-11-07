@@ -2,6 +2,7 @@ package com.controlunion.excelUploader.model;
 
 import com.controlunion.excelUploader.model.comp_keys.FarmerListFinalID;
 import com.controlunion.excelUploader.model.custom.FarmerCommon;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -54,6 +55,7 @@ public class FarmerListFinal implements FarmerCommon {
     private String eujas_harvest;
     private String usda_field;
     private String usda_harvest;
+    @JsonManagedReference
     @OneToMany(mappedBy="farmerListFinal",cascade = {CascadeType.ALL})
     private List<FarmerListCropFinal> farmerListCropFinalList;
 }

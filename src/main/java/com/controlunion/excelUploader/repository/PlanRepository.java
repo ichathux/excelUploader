@@ -10,4 +10,5 @@ import java.util.Optional;
 
 public interface PlanRepository extends JpaRepository<Plan, Long> {
     Optional<List<Plan>> findAllByProID(Projects proID);
+    Optional<Plan> findTopOneByProIDAndCertifiedOrderByPlanIDDesc(Projects proID, boolean isCertified);
 }

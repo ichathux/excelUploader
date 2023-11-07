@@ -1,6 +1,7 @@
 package com.controlunion.excelUploader.model;
 
 import com.controlunion.excelUploader.model.comp_keys.FarmerListCropID;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import javax.persistence.*;
 @IdClass(FarmerListCropID.class)
 public class FarmerListCrop {
 
+    @JsonBackReference
     @ManyToOne(cascade = CascadeType.ALL,fetch= FetchType.LAZY)
     @JoinColumn(name="listid",referencedColumnName = "listid", nullable = false)
     @JoinColumn(name="proID",referencedColumnName = "proID", nullable = false)

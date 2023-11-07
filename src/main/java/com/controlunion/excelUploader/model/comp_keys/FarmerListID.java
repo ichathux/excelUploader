@@ -12,8 +12,11 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Data
 public class FarmerListID implements Serializable {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int listid;
     private int proID;
     private int auditID;
+
+
+
 }

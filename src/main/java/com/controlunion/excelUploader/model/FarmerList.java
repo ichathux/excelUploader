@@ -3,6 +3,7 @@ package com.controlunion.excelUploader.model;
 import com.controlunion.excelUploader.model.comp_keys.FarmerListID;
 import com.controlunion.excelUploader.model.custom.FarmerCommon;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,7 +26,7 @@ import java.util.List;
 public class FarmerList implements FarmerCommon {
 
     @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "listid", nullable = true)
     private int listid;
     @Id
@@ -97,13 +98,14 @@ public class FarmerList implements FarmerCommon {
     private String farmName;
     @Column(name = "plotCode", nullable = true)
     private String plotCode;
-    @JsonIgnore
+//    @JsonIgnore
     @Column(name = "chng_farmdata",columnDefinition = "varchar(2000)", nullable = true)
     private String chngFarmdata;
-    @JsonIgnore
+//    @JsonIgnore
     @Column(name = "chng_cropdata",columnDefinition = "varchar(2000)", nullable = true)
     private String chngCropdata;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "farmerList", cascade = {CascadeType.ALL})
     private List<FarmerListCrop> farmerListCropList;
 

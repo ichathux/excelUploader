@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -31,7 +34,7 @@ public class FarmerListService {
 //                }
 //
 //            }
-//            farmerlistRepository.saveAll(farmerLists);
+            farmerlistRepository.saveAll(farmerLists);
             log.info("saving user data to DB - success ");
             return ResponseEntity.ok().body("Done");
         } catch (Exception e) {
@@ -51,5 +54,10 @@ public class FarmerListService {
         }
         System.out.println("last list id : " + listId);
         return listId;
+    }
+
+    public ResponseEntity<List<FarmerList>> getFarmListForProIdAndAuditId(int proId, int auditId) {
+        Optional<List<FarmerList>> farmerList = farmerlistRepository.findFarmerListByProIDAndAuditID(proId, auditId);
+        return farmerList.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
     }
 }
