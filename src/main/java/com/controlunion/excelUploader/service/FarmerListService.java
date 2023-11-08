@@ -1,6 +1,8 @@
 package com.controlunion.excelUploader.service;
 
 import com.controlunion.excelUploader.model.FarmerList;
+import com.controlunion.excelUploader.model.FarmerListCrop;
+import com.controlunion.excelUploader.repository.FarmerListCropRepository;
 import com.controlunion.excelUploader.repository.FarmerlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,24 +20,24 @@ import java.util.Optional;
 public class FarmerListService {
 
     private final FarmerlistRepository farmerlistRepository;
+    private final FarmerListCropRepository farmerListCropRepository;
 
     @Transactional
     public ResponseEntity<String> saveFarmerList(Iterable<FarmerList> farmerLists) {
-
+        log.info("Start saving on db ");
         try {
-//            for (FarmerList farmerList : farmerLists) {
-//                try {
-//                    log.info("saving : " + farmerList);
-//
-//                    log.info("saved : ");
-//                } catch (RuntimeException e) {
-//                    log.error(e.getMessage());
-//                } catch (Exception e) {
-//                    throw e;
+            for (FarmerList farmerList : farmerLists){
+
+//                ArrayList<FarmerListCrop> farmerListCrops = new ArrayList<>();
+//                for (FarmerListCrop crop : farmerList.getFarmerListCropList()){
+//                    System.out.println("adding crop : "+crop);
+//                    crop = farmerListCropRepository.save(crop);
+//                    farmerListCrops.add(crop);
 //                }
-//
-//            }
-            farmerlistRepository.saveAll(farmerLists);
+//                System.out.println(farmerListCrops.size());
+//                farmerList.setFarmerListCropList(farmerListCrops);
+                farmerlistRepository.save(farmerList);
+            }
             log.info("saving user data to DB - success ");
             return ResponseEntity.ok().body("Done");
         } catch (Exception e) {
@@ -45,16 +48,6 @@ public class FarmerListService {
 
     }
 
-    public int getLastFarmListId() {
-        int listId = 1;
-        FarmerList farmerList = farmerlistRepository.findFirstByOrderByListidDesc().orElse(null);
-
-        if (farmerList != null) {
-            listId = farmerList.getListid();
-        }
-        System.out.println("last list id : " + listId);
-        return listId;
-    }
 
     public ResponseEntity<List<FarmerList>> getFarmListForProIdAndAuditId(int proId, int auditId) {
         Optional<List<FarmerList>> farmerList = farmerlistRepository.findFarmerListByProIDAndAuditID(proId, auditId);

@@ -18,6 +18,7 @@ public interface FarmerListFinalRepository extends JpaRepository<FarmerListFinal
     Optional<List<FarmerListFinal>> findAllByFarCodeEUJASAndProIDAndAuditID(String farmerCode, int proId, int auditID);
     Optional<List<FarmerListFinal>> findAllByFarCodeEUJASAndProID(String farmerCode, int proId);
     Optional<List<FarmerListFinal>> findAllByCufarmerIDAndProID(int cuFarmerId, int proId);
+    Optional<List<FarmerListFinal>> findAllByProIDAndAuditID(int proId, int auditId);
 //    int findTopCufarmerIDByFarCodeEUJAS(String farmerCode);
     Optional<Integer> findCufarmerIDByFarCodeEUJASAndProID(String farCodeEUJAS, int proId);
     boolean existsByFarCodeEUJAS(String farmerCode);

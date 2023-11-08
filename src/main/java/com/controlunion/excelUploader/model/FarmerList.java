@@ -2,7 +2,6 @@ package com.controlunion.excelUploader.model;
 
 import com.controlunion.excelUploader.model.comp_keys.FarmerListID;
 import com.controlunion.excelUploader.model.custom.FarmerCommon;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,7 +25,7 @@ import java.util.List;
 public class FarmerList implements FarmerCommon {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue
     @Column(name = "listid", nullable = true)
     private int listid;
     @Id
@@ -35,7 +34,6 @@ public class FarmerList implements FarmerCommon {
     @Id
     @Column(name = "auditID", nullable = true)
     private int auditID;
-
     @Column(name = "cufarmerID", nullable = true)
     private int cufarmerID;
     @Column(name = "unitNoEUJAS", nullable = true)
@@ -104,9 +102,11 @@ public class FarmerList implements FarmerCommon {
 //    @JsonIgnore
     @Column(name = "chng_cropdata",columnDefinition = "varchar(2000)", nullable = true)
     private String chngCropdata;
-
     @JsonManagedReference
-    @OneToMany(mappedBy = "farmerList", cascade = {CascadeType.ALL})
+    @OneToMany(cascade = {CascadeType.ALL},fetch = FetchType.LAZY)
+    @JoinColumn(name="listid",referencedColumnName = "listid", nullable = false)
+    @JoinColumn(name="proID",referencedColumnName = "proID", nullable = false)
+    @JoinColumn(name="auditID",referencedColumnName = "auditID", nullable = false)
     private List<FarmerListCrop> farmerListCropList;
 
 }

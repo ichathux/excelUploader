@@ -13,5 +13,7 @@ public class FarmerListCropID implements Serializable {
     private int cufarmerID;
     private String plotCode;
     private int cropID;
+    private int proID;
+    private int auditID;
 }
 

@@ -20,6 +20,6 @@ import java.util.List;
 public class FarmerListComparisonDto {
     private HashMap<String, FarmerList> map1;
     private HashMap<String, FarmerListFinal> map2;
-    private HashMap<String, Integer> cuidVsFarmarCode;
+//    private HashMap<String, Integer> cuidVsFarmarCode;
 
 }

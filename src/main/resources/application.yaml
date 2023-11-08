@@ -15,10 +15,10 @@ spring:
     initialize:
         true
   jpa:
-    properties:
-      hibernate:
-        show_sql:
-          true
+#    properties:
+#      hibernate:
+#        show_sql:
+#          true
     database-platform:
       org.hibernate.dialect.MySQL5InnoDBDialect
     hibernate:
@@ -54,11 +54,11 @@ logging:
   level:
     root:
       INFO
-
-    org:
-      springframework:
-        cache:
-          DEBUG
+#    org.hibernate: DEBUG
+#    org:
+#      springframework:
+#        cache:
+#          DEBUG
 #    org.hibernate.SQL:
 #      DEBUG
 #    org.hibernate.type.descriptor.sql.BasicBinder:

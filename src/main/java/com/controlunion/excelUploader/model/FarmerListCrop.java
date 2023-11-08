@@ -1,33 +1,31 @@
 package com.controlunion.excelUploader.model;
 
-import com.controlunion.excelUploader.model.comp_keys.FarmerListCropID;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.sql.Date;
 
-
+/**
+ * @author : Udara Deshan <udaradeshan.ud@gmail.com>
+ * @since : 11/1/2022
+ **/
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Entity(name = "farmerlist_crop")
-@IdClass(FarmerListCropID.class)
 public class FarmerListCrop {
-
-    @JsonBackReference
-    @ManyToOne(cascade = CascadeType.ALL,fetch= FetchType.LAZY)
-    @JoinColumn(name="listid",referencedColumnName = "listid", nullable = false)
-    @JoinColumn(name="proID",referencedColumnName = "proID", nullable = false)
-    @JoinColumn(name="auditID",referencedColumnName = "auditID", nullable = false)
-    private FarmerList farmerList;
     @Id
-    private int cropID;
-    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = true)
+    private int id;
+    @Column(name = "cufarmerID", nullable = true)
     private int cufarmerID;
-    @Id
+    @Column(name = "plotCode", nullable = true)
     private String plotCode;
+    @Column(name = "cropID", nullable = true)
+    private int cropID;
     @Column(name = "noOfPlant", nullable = true)
     private double noOfPlant;
     @Column(name = "estiYield", nullable = true)
@@ -36,5 +34,5 @@ public class FarmerListCrop {
     private double realYield;
     @Column(name = "noOfSesons", nullable = true)
     private double noOfSesons;
-
 }
+ 
