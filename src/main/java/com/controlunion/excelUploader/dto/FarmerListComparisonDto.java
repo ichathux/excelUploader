@@ -18,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FarmerListComparisonDto {
+    private int proId;
+    private long lastAuditId;
     private HashMap<String, FarmerList> map1;
     private HashMap<String, FarmerListFinal> map2;
 //    private HashMap<String, Integer> cuidVsFarmarCode;

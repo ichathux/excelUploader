@@ -1,7 +1,8 @@
 package com.controlunion.excelUploader.controller;
 
 import com.controlunion.excelUploader.service.CropService;
-import com.controlunion.excelUploader.service.FileServiceNew;
+//import com.controlunion.excelUploader.service.FileServiceNew;
+import com.controlunion.excelUploader.service.FileServiceNewTest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +15,7 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 @RequiredArgsConstructor
 public class FileController {
 
-    private final FileServiceNew fileService;
+    private final FileServiceNewTest fileService;
     private final CropService cropService;
 
     /**
