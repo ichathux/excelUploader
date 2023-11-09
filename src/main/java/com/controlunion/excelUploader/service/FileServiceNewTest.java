@@ -385,7 +385,7 @@ public class FileServiceNewTest {
                         farmerList.setCufarmerID(cuid);
 //                        farmerList.setIsNew(isNewFarmer ? 1 : 0);
 //                        log.info(className + ".readAuditData : Farmer Code for EU / JAS : " + farmerCode);
-                        userMap.putIfAbsent(cell.getStringCellValue(), new ArrayList<>());
+                        userMap.putIfAbsent(cell.getStringCellValue().trim(), new ArrayList<>());
                         break;
                     case 3:
                         farmerList.setUnitNoNOP(convertCellValueToStringValue(cell));
@@ -590,30 +590,50 @@ public class FileServiceNewTest {
 //                }catch (NullPointerException e){
 //
 //                }
+
                 for (i = 0; i < excelFileProperties.getHeader3().size(); i++) {
                     try {
 //                        System.out.println(crop.getCropName() + " : " + row.getCell(currentCellStart + i).getAddress());
                         switch (i) {
                             case 0:
-                                farmerListCrop.setNoOfPlant(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+                                try{
+                                    farmerListCrop.setNoOfPlant(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+
+                                }catch (NullPointerException e){
+                                    farmerListCrop.setNoOfPlant(0);
+                                }
                                 break;
                             case 1:
-                                farmerListCrop.setEstiYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+                                try{
+                                    farmerListCrop.setEstiYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+
+                                }catch (NullPointerException e){
+                                    farmerListCrop.setEstiYield(0);
+                                }
                                 break;
                             case 2:
-                                farmerListCrop.setRealYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+                                try{
+                                    farmerListCrop.setRealYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+                                }catch (NullPointerException e){
+                                    farmerListCrop.setRealYield(0);
+                                }
                                 break;
                             case 3:
-                                farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+                                try{
+                                    farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+                                }catch (NullPointerException e){
+                                    farmerListCrop.setNoOfSesons(0);
+                                }
                                 break;
-
                         }
                     } catch (NullPointerException e) {
                         log.error("null pointer occurred when reading crops data");
-                        errorList.add(ExcelErrorResponse.builder()
-                                .error("Format not valid")
-                                .location("Row "+String.valueOf(row.getRowNum())+" cell "+i)
-                                .build());
+//                        errorList.add(ExcelErrorResponse.builder()
+//                                .error("Format not valid")
+//                                .location("Row "+String.valueOf(row.getRowNum()+1)
+//                                        +" cell "+(excelFileProperties.getHeader3().get(i) +
+//                                        "for : Crop "+crop.getCropName()))
+//                                .build());
                         e.printStackTrace();
                     }
                 }
@@ -899,7 +919,7 @@ public class FileServiceNewTest {
                     errorList.add(ExcelErrorResponse.builder()
                             .location("Cell " + cell.getAddress())
                             .error(Errors.INVALID_HEADER.getName())
-                            .errorValue(cell.getStringCellValue())
+                            .errorValue(cell.getStringCellValue().trim())
                             .correctValue(auditDetails.get(i))
                             .build());
                 } else {
@@ -939,7 +959,7 @@ public class FileServiceNewTest {
             errorList.add(ExcelErrorResponse.builder()
                     .location("Cell " + cell.getAddress())
                     .error(Errors.REQUIRED_NUMBER_VALUE.getName())
-                    .errorValue(cell.getStringCellValue())
+                    .errorValue(cell.getStringCellValue().trim())
                     .correctValue(String.valueOf(projectId))
                     .build());
         } catch (NullPointerException e) {
@@ -954,7 +974,7 @@ public class FileServiceNewTest {
     private void validateProjectName(String projectName, XSSFRow row, List<ExcelErrorResponse> errorList) {
         XSSFCell cell = row.getCell(1);
         try {
-            if (!projectName.equals(cell.getStringCellValue())) {
+            if (!projectName.equals(cell.getStringCellValue().trim())) {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
                         .error(Errors.PROJECT_NAME_MISMATCH.getName())
@@ -966,7 +986,7 @@ public class FileServiceNewTest {
             errorList.add(ExcelErrorResponse.builder()
                     .location("Cell " + cell.getAddress())
                     .error(Errors.REQUIRED_TEXT_VALUE.getName())
-                    .errorValue(cell.getStringCellValue())
+                    .errorValue(cell.getStringCellValue().trim())
                     .correctValue(projectName)
                     .build());
         } catch (NullPointerException e) {
@@ -1016,7 +1036,7 @@ public class FileServiceNewTest {
             while (cellIterator.hasNext()) {
                 Cell cell = cellIterator.next();
                 try {
-                    if (cell.getStringCellValue().equals(excelFileProperties.getHeader1().get(cell.getColumnIndex()))) {
+                    if (cell.getStringCellValue().trim().equals(excelFileProperties.getHeader1().get(cell.getColumnIndex()))) {
                         matchingTableHeaders++;
 //                        log.info("matching headers " + matchingTableHeaders);
                     }
@@ -1083,21 +1103,20 @@ public class FileServiceNewTest {
         for (Cell cell : row) {
             try {
                 if (excelFileProperties.getHeader1().containsKey(cell.getColumnIndex())) {
-                    if (!cell.getStringCellValue().equals(excelFileProperties.getHeader1().get(cell.getColumnIndex()))) {
+                    if (!cell.getStringCellValue().trim().contentEquals(excelFileProperties.getHeader1().get(cell.getColumnIndex()).trim())) {
                         errorList.add(ExcelErrorResponse.builder()
-                                .location("Cell " + cell.getAddress())
+                                .location("Cell * " + cell.getAddress())
                                 .error(Errors.INVALID_HEADER.getName())
-                                .errorValue(cell.getStringCellValue())
+                                .errorValue(cell.getStringCellValue().trim())
                                 .correctValue(excelFileProperties.getHeader1()
                                         .get(cell.getColumnIndex())).build());
-
                     }
                 }
             } catch (NullPointerException | IllegalStateException e) {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
                         .error(Errors.INVALID_HEADER.getName())
-                        .errorValue(cell.getStringCellValue())
+                        .errorValue(cell.getStringCellValue().trim())
                         .correctValue(excelFileProperties.getHeader1()
                                 .get(cell.getColumnIndex())).build());
 
@@ -1123,7 +1142,7 @@ public class FileServiceNewTest {
                         errorList.add(ExcelErrorResponse.builder()
                                 .location("Cell " + cell.getAddress())
                                 .error(Errors.INVALID_HEADER.getName())
-                                .errorValue(cell.getStringCellValue())
+                                .errorValue(cell.getStringCellValue().trim())
                                 .correctValue(excelFileProperties.getHeader2()
                                         .get(cell.getColumnIndex())).build());
 
@@ -1133,7 +1152,7 @@ public class FileServiceNewTest {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
                         .error(Errors.INVALID_HEADER.getName())
-                        .errorValue(cell.getStringCellValue())
+                        .errorValue(cell.getStringCellValue().trim())
                         .correctValue(excelFileProperties.getHeader2()
                                 .get(cell.getColumnIndex())).build());
 
@@ -1174,7 +1193,7 @@ public class FileServiceNewTest {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
                         .error(Errors.CROP_NOT_VALID.getName())
-                        .errorValue(cell.getStringCellValue())
+                        .errorValue(cell.getStringCellValue().trim())
                         .build());
             } else {
 
@@ -1200,10 +1219,10 @@ public class FileServiceNewTest {
                 if (!cell.getStringCellValue().trim().equals(excelFileProperties.getHeader3().get(i - colNumber))) {
                     errorList.add(ExcelErrorResponse.builder().location("Cell " + cell.getAddress())
                             .error(Errors.INVALID_TABLE_HEADER.getName())
-                            .errorValue(cell.getStringCellValue())
+                            .errorValue(cell.getStringCellValue().trim())
                             .correctValue(excelFileProperties.getHeader3().get(i - colNumber))
                             .build());
-                    log.error("validateCropsSub : " + (i - colNumber) + " : " + cell.getStringCellValue() + " : " + crop.getCropName() + " : failed");
+                    log.error("validateCropsSub : " + (i - colNumber) + " : " + cell.getStringCellValue().trim() + " : " + crop.getCropName() + " : failed");
                 } else {
 //                    log.info("validateCropsSub : " + (i - colNumber) + " : " + cell.getStringCellValue() + " : " + crop.getCropName() + " : passed");
                 }
@@ -1360,7 +1379,7 @@ public class FileServiceNewTest {
 //                System.out.println(cell.getNumericCellValue() + "".trim());
                     return cell.getNumericCellValue() + "".trim();
                 case FORMULA:
-                    return cell.getStringCellValue();
+                    return cell.getStringCellValue().trim();
                 default:
                     return "";
 
@@ -1384,7 +1403,7 @@ public class FileServiceNewTest {
             switch (cellType) {
                 case STRING:
 //                System.out.println("String found");
-                    val = Double.parseDouble(cell.getStringCellValue());
+                    val = Double.parseDouble(cell.getStringCellValue().trim());
                     break;
                 case NUMERIC:
 //                System.out.println("NUMERIC found");
