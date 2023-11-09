@@ -302,18 +302,25 @@ public class FileServiceNewTest {
                                         .findAny()
                                         .orElse(null);
                                 if (farmerListFinal == null) {
-                                    errorList.add(ExcelErrorResponse.builder()
-                                            .error("farmer not exist. remove cuid")
-                                            .location("Row : " + (row.getRowNum() + 1))
-                                            .build());
+//                                    errorList.add(ExcelErrorResponse.builder()
+//                                            .error("farmer not exist. remove cuid")
+//                                            .location("Row : " + (row.getRowNum() + 1))
+//                                            .build());
+                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                        cuid = farmerCodeVsCuid.get(farmerCode);
+                                    } else {
+                                        cuid = farmerListFinalService.createCuid();
+                                        farmerCodeVsCuid.put(farmerCode, cuid);
+                                    }
                                 } else {
                                     if (cuid != farmerListFinal.getCufarmerID()) {
 //                                    cuid not matched send error message to user
-                                        errorList.add(ExcelErrorResponse.builder()
-                                                .error("cuid not matched")
-                                                .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
-                                                .location("Row : " + (row.getRowNum() + 1))
-                                                .build());
+//                                        errorList.add(ExcelErrorResponse.builder()
+//                                                .error("cuid not matched")
+//                                                .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
+//                                                .location("Row : " + (row.getRowNum() + 1))
+//                                                .build());
+                                        cuid = farmerListFinal.getCufarmerID();
                                     }
                                 }
 
