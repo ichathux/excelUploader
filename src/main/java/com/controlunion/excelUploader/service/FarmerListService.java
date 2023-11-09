@@ -29,16 +29,8 @@ public class FarmerListService {
             ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
             for (FarmerList farmerList : farmerLists){
 
-//                ArrayList<FarmerListCrop> farmerListCrops = new ArrayList<>();
-//                for (FarmerListCrop crop : farmerList.getFarmerListCropList()){
-//                    System.out.println("adding crop : "+crop);
-//                    crop = farmerListCropRepository.save(crop);
-//                    farmerListCrops.add(crop);
-//                }
-//                System.out.println(farmerListCrops.size());
-//                farmerList.setFarmerListCropList(farmerListCrops);
                 if (!farmerListsExist.isEmpty()){
-                    System.out.println("already contained data");
+//                    System.out.println("already contained data");
                     FarmerList fl = farmerListsExist.stream()
                             .filter(f -> f.getCufarmerID() == farmerList.getCufarmerID()
                             && f.getPlotCode().contentEquals(farmerList.getPlotCode()))
@@ -46,10 +38,10 @@ public class FarmerListService {
                     if (fl != null){
                         removeExistingData(farmerList, fl);
                     }
-                    System.out.println(fl);
-                    System.out.println(farmerList);
+//                    System.out.println(fl);
+//                    System.out.println(farmerList);
                 }
-                System.out.println("start saving data");
+//                System.out.println("start saving data");
                 farmerlistRepository.save(farmerList);
             }
             log.info("saving user data to DB - success ");
@@ -63,11 +55,11 @@ public class FarmerListService {
     }
 
     private void removeExistingData(FarmerList farmerList, FarmerList fl) {
-        System.out.println("already contained data-1");
+//        System.out.println("already contained data-1");
         farmerList.setListid(fl.getListid());
         farmerlistRepository.delete(fl);
         farmerlistRepository.findFarmerListByProIDAndAuditID(farmerList.getProID(), farmerList.getAuditID()).isPresent();
-        System.out.println("deleted-1");
+//        System.out.println("deleted-1");
     }
 
     private ArrayList<FarmerList> checkFarmerListAlreadyExistForproidAndAuditID(int proId, int auditId) {
