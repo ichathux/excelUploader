@@ -23,9 +23,10 @@ public class FarmerListService {
     private final FarmerListCropRepository farmerListCropRepository;
 
     @Transactional
-    public ResponseEntity<String> saveFarmerList(Iterable<FarmerList> farmerLists) {
+    public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) throws InterruptedException {
         log.info("Start saving on db ");
         try {
+            ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
             for (FarmerList farmerList : farmerLists){
 
 //                ArrayList<FarmerListCrop> farmerListCrops = new ArrayList<>();
@@ -36,6 +37,19 @@ public class FarmerListService {
 //                }
 //                System.out.println(farmerListCrops.size());
 //                farmerList.setFarmerListCropList(farmerListCrops);
+                if (!farmerListsExist.isEmpty()){
+                    System.out.println("already contained data");
+                    FarmerList fl = farmerListsExist.stream()
+                            .filter(f -> f.getCufarmerID() == farmerList.getCufarmerID()
+                            && f.getPlotCode().contentEquals(farmerList.getPlotCode()))
+                            .findFirst().orElse(null);
+                    if (fl != null){
+                        removeExistingData(farmerList, fl);
+                    }
+                    System.out.println(fl);
+                    System.out.println(farmerList);
+                }
+                System.out.println("start saving data");
                 farmerlistRepository.save(farmerList);
             }
             log.info("saving user data to DB - success ");
@@ -44,9 +58,20 @@ public class FarmerListService {
             log.error("error occurred while saving user data to DB : " + e.getMessage());
             e.printStackTrace();
             throw e;
-//            return ResponseEntity.internalServerError().body(e.getMessage());
         }
 
+    }
+
+    private void removeExistingData(FarmerList farmerList, FarmerList fl) {
+        System.out.println("already contained data-1");
+        farmerList.setListid(fl.getListid());
+        farmerlistRepository.delete(fl);
+        farmerlistRepository.findFarmerListByProIDAndAuditID(farmerList.getProID(), farmerList.getAuditID()).isPresent();
+        System.out.println("deleted-1");
+    }
+
+    private ArrayList<FarmerList> checkFarmerListAlreadyExistForproidAndAuditID(int proId, int auditId) {
+        return farmerlistRepository.findAllByProIDAndAuditID(proId, auditId).orElse(new ArrayList<>());
     }
 
 
@@ -54,4 +79,6 @@ public class FarmerListService {
         Optional<List<FarmerList>> farmerList = farmerlistRepository.findFarmerListByProIDAndAuditID(proId, auditId);
         return farmerList.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
     }
+
+
 }

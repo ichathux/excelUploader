@@ -126,7 +126,7 @@ public class FileServiceNewTest {
                 try {
                     farmerLists = makeComparison(farmerListComparisonDto, fFinals);
 //                    System.out.println("new user count " + newUser);
-                    return farmerListService.saveFarmerList(farmerLists);
+                    return farmerListService.saveFarmerList(proId, auditId, farmerLists);
                 } catch (DataIntegrityViolationException e) {
 //                    System.out.println("error");
                     errorList.add(ExcelErrorResponse.builder()
