@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,30 +21,46 @@ import java.util.Optional;
 public class FarmerListService {
 
     private final FarmerlistRepository farmerlistRepository;
-    private final FarmerListCropRepository farmerListCropRepository;
+//    private final FarmerListCropRepository farmerListCropRepository;
 
     @Transactional
-    public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) throws InterruptedException {
+    public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) {
         log.info("Start saving on db ");
         try {
+            ArrayList<FarmerList> list = new ArrayList<>();
             ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
-            for (FarmerList farmerList : farmerLists){
+            if (!farmerListsExist.isEmpty()){
+                for (FarmerList farmerList : farmerLists) {
+                        FarmerList fl = farmerListsExist.stream()
+                                .filter(f -> f.getCufarmerID() == farmerList.getCufarmerID()
+                                        && f.getPlotCode().contentEquals(farmerList.getPlotCode()))
+                                .findFirst().orElse(null);
+                        if (fl != null) {
+                            farmerList.setListid(fl.getListid());
+                            List<FarmerListCrop> farmerListCropsOld = fl.getFarmerListCropList();
+                            List<FarmerListCrop> farmerListCropsnew = new ArrayList<>();
+                            for (FarmerListCrop c :farmerListCropsOld){
+                                FarmerListCrop fc = farmerList.getFarmerListCropList().stream()
+                                        .filter(c1 -> c1.getCropID() == c.getCropID())
+                                        .findFirst()
+                                        .orElse(null);
+                                if (fc != null){
+                                    fc.setId(c.getId());
+                                }
+                                farmerListCropsnew.add(fc);
+                            }
+                            farmerList.setFarmerListCropList(farmerListCropsnew);
+                            list.add(farmerList);
 
-                if (!farmerListsExist.isEmpty()){
-//                    System.out.println("already contained data");
-                    FarmerList fl = farmerListsExist.stream()
-                            .filter(f -> f.getCufarmerID() == farmerList.getCufarmerID()
-                            && f.getPlotCode().contentEquals(farmerList.getPlotCode()))
-                            .findFirst().orElse(null);
-                    if (fl != null){
-                        removeExistingData(farmerList, fl);
+
+                        farmerlistRepository.saveAll(list);
                     }
-//                    System.out.println(fl);
-//                    System.out.println(farmerList);
+//                    System.out.println("start saving data");
                 }
-//                System.out.println("start saving data");
-                farmerlistRepository.save(farmerList);
+            }else{
+                farmerlistRepository.saveAll(farmerLists);
             }
+
             log.info("saving user data to DB - success ");
             return ResponseEntity.ok().build();
         } catch (Exception e) {
@@ -55,6 +72,7 @@ public class FarmerListService {
     }
 
     private void removeExistingData(FarmerList farmerList, FarmerList fl) {
+
 //        System.out.println("already contained data-1");
         farmerList.setListid(fl.getListid());
         farmerlistRepository.delete(fl);
@@ -63,7 +81,35 @@ public class FarmerListService {
     }
 
     private ArrayList<FarmerList> checkFarmerListAlreadyExistForproidAndAuditID(int proId, int auditId) {
+
         return farmerlistRepository.findAllByProIDAndAuditID(proId, auditId).orElse(new ArrayList<>());
+    }
+
+    private void removeDuplicateData(ArrayList<FarmerList> farmerListsOld, Iterable<FarmerList> farmerLists,
+                                     int proId, int auditId) {
+        System.out.println("Removing old data");
+        ArrayList<FarmerList> farmerLists1 = new ArrayList<>();
+
+        for(FarmerList farmerList : farmerLists){
+            FarmerList fl = farmerListsOld.stream()
+                    .filter(f -> f.getCufarmerID() == farmerList.getCufarmerID() &&
+                    f.getPlotCode().contentEquals(farmerList.getPlotCode()))
+                    .findFirst()
+                    .orElse(null);
+            if (fl != null){
+                farmerlistRepository.delete(fl);
+                farmerLists1.add(fl);
+            }
+        }
+
+//        farmerlistRepository.deleteAll(farmerLists1);
+
+//        if (!checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId).isEmpty()){
+//            removeDuplicateData(checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId),
+//                    farmerLists,
+//                    proId,
+//                    auditId);
+//        }
     }
 
 

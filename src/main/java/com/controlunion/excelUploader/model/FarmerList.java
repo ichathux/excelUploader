@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 
@@ -27,6 +28,8 @@ public class FarmerList implements FarmerCommon {
 
     @Id
     @GeneratedValue
+//    @GeneratedValue(generator = "custom-generator")
+//    @GenericGenerator(name = "custom-generator", strategy = "com.controlunion.excelUploader.util.CustomIdentifierGenerator")
     @Column(name = "listid", nullable = true)
     private int listid;
     @Id
