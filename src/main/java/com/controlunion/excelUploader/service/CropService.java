@@ -20,7 +20,7 @@ public class CropService {
     public Crop getCropByName(String name) {
 //        log.info(this.getClass().getName()+".getCropByName: getting crop " + name + " on db");
         try{
-            return cropRepository.findByCropName(name).orElse(null);
+            return cropRepository.findTopByCropName(name).orElse(null);
         }catch (Exception e){
             e.getStackTrace();
            log.error(this.getClass().getName()+".getCropByName: getting crop " + name + " on db" + e.getMessage());

@@ -11,5 +11,5 @@ import java.util.Optional;
 @Repository
 public interface CropRepository extends CrudRepository<Crop, Long> {
     @Cacheable(value = "crops")
-    Optional<Crop> findByCropName(String cropName);
+    Optional<Crop> findTopByCropName(String cropName);
 }
