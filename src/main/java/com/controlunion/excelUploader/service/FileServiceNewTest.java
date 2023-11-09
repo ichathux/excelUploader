@@ -1390,20 +1390,20 @@ public class FileServiceNewTest {
                     .build());
 
         }
-        if (!mandatory_fields.isStartingDateOrg()) {
-            errorList.add(ExcelErrorResponse.builder()
-                    .location("Row:" + row)
-                    .error("Starting date of Organic Period (yyyy-mm-dd) is mandatory.")
-                    .build());
-
-        }
-        if (!mandatory_fields.isEujasField()) {
-            errorList.add(ExcelErrorResponse.builder()
-                    .location("Row:" + row)
-                    .error("Field Status EU/JAS ic1/ic2/ic3/org is mandatory.")
-                    .build());
-
-        }
+//        if (!mandatory_fields.isStartingDateOrg()) {
+//            errorList.add(ExcelErrorResponse.builder()
+//                    .location("Row:" + row)
+//                    .error("Starting date of Organic Period (yyyy-mm-dd) is mandatory.")
+//                    .build());
+//
+//        }
+//        if (!mandatory_fields.isEujasField()) {
+//            errorList.add(ExcelErrorResponse.builder()
+//                    .location("Row:" + row)
+//                    .error("Field Status EU/JAS ic1/ic2/ic3/org is mandatory.")
+//                    .build());
+//
+//        }
         if (!mandatory_fields.isEujasHarvest()) {
             errorList.add(ExcelErrorResponse.builder()
                     .location("Row:" + row)
