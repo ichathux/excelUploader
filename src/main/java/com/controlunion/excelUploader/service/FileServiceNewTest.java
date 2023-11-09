@@ -116,7 +116,7 @@ public class FileServiceNewTest {
 
             if (errorList.isEmpty()) {
                 farmerLists = makeComparison(farmerListComparisonDto, fFinals);
-                System.out.println("new user count "+newUser);
+                System.out.println("new user count " + newUser);
                 farmerListService.saveFarmerList(farmerLists);
             }
         } catch (IOException e) {
@@ -156,7 +156,6 @@ public class FileServiceNewTest {
         HashMap<String, FarmerListFinal> farmarCodeMappingWithFarmListFinal = new LinkedHashMap<>();
         HashMap<String, FarmerList> farmarCodeMappingWithFarmList = new LinkedHashMap<>();
         HashMap<String, Integer> farmerCodeVsCuid = new LinkedHashMap<>();
-
 
 
         while (iterator.hasNext()) {
@@ -244,7 +243,7 @@ public class FileServiceNewTest {
 //                                    System.out.println(row.getRowNum()+1);
 //                                    System.out.println("new");
                                     isNewFarmer = true;
-                                    farmerList.setIsNew(isNewFarmer? 1 : 0);
+                                    farmerList.setIsNew(isNewFarmer ? 1 : 0);
 //                                    new user
                                     if (farmerCodeVsCuid.containsKey(farmerCode)) {
                                         cuid = farmerCodeVsCuid.get(farmerCode);
@@ -266,12 +265,12 @@ public class FileServiceNewTest {
                                         .filter(f -> f.getFarCodeEUJAS().equals(finalFarmerCode))
                                         .findAny()
                                         .orElse(null);
-                                if (farmerListFinal == null){
+                                if (farmerListFinal == null) {
                                     errorList.add(ExcelErrorResponse.builder()
                                             .error("farmer not exist. remove cuid")
                                             .location("Row : " + (row.getRowNum() + 1))
                                             .build());
-                                }else{
+                                } else {
                                     if (cuid != farmerListFinal.getCufarmerID()) {
 //                                    cuid not matched send error message to user
                                         errorList.add(ExcelErrorResponse.builder()
@@ -571,6 +570,7 @@ public class FileServiceNewTest {
     }
 
     private void readingCropDatas(Map<Integer, Crop> cropMapping, List<ExcelErrorResponse> errorList, int cuid, String plotCode, Row row, FarmerList farmerList, List<FarmerListCrop> farmerListCropList, Cell cell) {
+        int i = 0;
         try {
             if (cropMapping.containsKey(cell.getColumnIndex())) {
 //                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++reading : " + cropMapping.get(cell.getColumnIndex()).getCropName());
@@ -583,26 +583,37 @@ public class FileServiceNewTest {
 
                 int currentCellStart = cell.getColumnIndex();
 //                System.out.println("Start from - " + cell.getAddress() + " : " + currentCellStart);
-                for (int i = 0; i < excelFileProperties.getHeader3().size(); i++) {
+//                try {
+//
+//                }catch (IllegalStateException e){
+//
+//                }catch (NullPointerException e){
+//
+//                }
+                for (i = 0; i < excelFileProperties.getHeader3().size(); i++) {
                     try {
 //                        System.out.println(crop.getCropName() + " : " + row.getCell(currentCellStart + i).getAddress());
                         switch (i) {
                             case 0:
-                                farmerListCrop.setNoOfPlant(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                farmerListCrop.setNoOfPlant(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
                                 break;
                             case 1:
-                                farmerListCrop.setEstiYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                farmerListCrop.setEstiYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
                                 break;
                             case 2:
-                                farmerListCrop.setRealYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                farmerListCrop.setRealYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
                                 break;
                             case 3:
-                                farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i)));
+                                farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
                                 break;
 
                         }
                     } catch (NullPointerException e) {
                         log.error("null pointer occurred when reading crops data");
+                        errorList.add(ExcelErrorResponse.builder()
+                                .error("Format not valid")
+                                .location("Row "+String.valueOf(row.getRowNum())+" cell "+i)
+                                .build());
                         e.printStackTrace();
                     }
                 }
@@ -655,10 +666,10 @@ public class FileServiceNewTest {
     }
 
     public String convertArrayListToJsonCrops(ArrayList<HashMap<String, ChangesDto>> arrayList) {
-        try{
+        try {
             ObjectMapper objectMapper = new ObjectMapper();
             ArrayList<String> list = new ArrayList<>();
-            for (HashMap<String, ChangesDto> chnges : arrayList){
+            for (HashMap<String, ChangesDto> chnges : arrayList) {
                 list.add(convertHashMapToJsonCrops(chnges));
             }
             String jsonArray = objectMapper.writeValueAsString(arrayList);
@@ -669,6 +680,7 @@ public class FileServiceNewTest {
         }
 
     }
+
     public String convertHashMapToJsonCrops(HashMap<String, ChangesDto> map) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -706,24 +718,24 @@ public class FileServiceNewTest {
         if (aFinal == null) {
             farmChanges.put("farmDataChange", new ChangesDto("new plot", plot, null));
         } else {
-            if (!aFinal.getFarmerName().equalsIgnoreCase(farmerList.getFarmerName())) {
-                farmChanges.put("farmDataChange", new ChangesDto("Farmer Name",aFinal.getFarmerName(), farmerList.getFarmerName()));
-                ObjectNode jsonObject = mapper.createObjectNode();
+            if (!aFinal.getFarmerName().equals(farmerList.getFarmerName())) {
+                farmChanges.put("farmDataChange", new ChangesDto("Farmer Name", aFinal.getFarmerName(), farmerList.getFarmerName()));
+//                ObjectNode jsonObject = mapper.createObjectNode();
 //                cChanges.add("farmDataChange"+new ChangesDto(aFinal.getFarmerName(), farmerList.getFarmerName()));
             }
-            if (!aFinal.getFarmName().equalsIgnoreCase(farmerList.getFarmName())) {
-                farmChanges.put("farmDataChange", new ChangesDto("Name of the Farm",aFinal.getFarmName(), farmerList.getFarmName()));
+            if (!aFinal.getFarmName().equals(farmerList.getFarmName())) {
+                farmChanges.put("farmDataChange", new ChangesDto("Name of the Farm", aFinal.getFarmName(), farmerList.getFarmName()));
             }
             if (aFinal.getTotalArea() != farmerList.getTotalArea()) {
                 farmChanges.put("farmDataChange", new ChangesDto("Total Area", String.valueOf(aFinal.getTotalArea()), String.valueOf(farmerList.getTotalArea())));
             }
-            if (!aFinal.getGps().equalsIgnoreCase(farmerList.getGps())) {
+            if (!aFinal.getGps().equals(farmerList.getGps())) {
                 farmChanges.put("farmDataChange", new ChangesDto("GPS", aFinal.getGps(), farmerList.getGps()));
             }
-            if (!aFinal.getAddress().equalsIgnoreCase(farmerList.getAddress())) {
+            if (!aFinal.getAddress().equals(farmerList.getAddress())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Address", aFinal.getAddress(), farmerList.getAddress()));
             }
-            if (!aFinal.getCity().equalsIgnoreCase(farmerList.getCity())) {
+            if (!aFinal.getCity().equals(farmerList.getCity())) {
                 farmChanges.put("farmDataChange", new ChangesDto("City", aFinal.getCity(), farmerList.getCity()));
             }
             if (!aFinal.getDateCert().equals(farmerList.getDateCert())) {
@@ -732,13 +744,13 @@ public class FileServiceNewTest {
             if (aFinal.getAplyRetrospe() != farmerList.getAplyRetrospe()) {
                 farmChanges.put("farmDataChange", new ChangesDto("Applying for Retrospective consideration (Yes/No)", String.valueOf(aFinal.getAplyRetrospe()), String.valueOf(farmerList.getAplyRetrospe())));
             }
-            if (!aFinal.getCertification().equalsIgnoreCase(farmerList.getCertification())) {
+            if (!aFinal.getCertification().equals(farmerList.getCertification())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Certifications", aFinal.getCertification(), farmerList.getCertification()));
             }
-            if (!aFinal.getFertilizer().equalsIgnoreCase(farmerList.getFertilizer())) {
+            if (!aFinal.getFertilizer().equals(farmerList.getFertilizer())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Types of fertilizer, pesticide used", aFinal.getFertilizer(), farmerList.getFertilizer()));
             }
-            if (!aFinal.getFerUseDate().equalsIgnoreCase(farmerList.getFerUseDate())) {
+            if (!aFinal.getFerUseDate().equals(farmerList.getFerUseDate())) {
                 farmChanges.put("farmDataChange ", new ChangesDto("Last date of use ", aFinal.getFerUseDate(), farmerList.getFerUseDate()));
             }
             if (!aFinal.getDateConfersion().equals(farmerList.getDateConfersion())) {
@@ -747,16 +759,16 @@ public class FileServiceNewTest {
             if (!aFinal.getDateorganic().equals(farmerList.getDateorganic())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Starting date of Organic Period (yyyy-mm-dd)", String.valueOf(aFinal.getDateorganic()), String.valueOf(farmerList.getDateorganic())));
             }
-            if (!aFinal.getEujas_field().equalsIgnoreCase(farmerList.getEujas_field())) {
+            if (!aFinal.getEujas_field().equals(farmerList.getEujas_field())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Field Status EU/JAS ic1/ic2/ic3/org", aFinal.getEujas_field(), farmerList.getEujas_field()));
             }
-            if (!aFinal.getEujas_harvest().equalsIgnoreCase(farmerList.getEujas_harvest())) {
+            if (!aFinal.getEujas_harvest().equals(farmerList.getEujas_harvest())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Harvest status EU/JAS conv/ic/org", aFinal.getEujas_harvest(), farmerList.getEujas_harvest()));
             }
-            if (!aFinal.getUsda_field().equalsIgnoreCase(farmerList.getUsda_field())) {
+            if (!aFinal.getUsda_field().equals(farmerList.getUsda_field())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Field status NOP ic1/ic2/ic3/org", aFinal.getUsda_field(), farmerList.getUsda_field()));
             }
-            if (!aFinal.getUsda_harvest().equalsIgnoreCase(farmerList.getUsda_harvest())) {
+            if (!aFinal.getUsda_harvest().equals(farmerList.getUsda_harvest())) {
                 farmChanges.put("farmDataChange", new ChangesDto("Harvest status NOP conv/org", aFinal.getUsda_harvest(), farmerList.getUsda_harvest()));
             }
 
@@ -783,66 +795,65 @@ public class FileServiceNewTest {
     }
 
     private ArrayList<HashMap<String, ChangesDto>> compareCropsData(List<FarmerListCropFinal> farmerListCrops_final,
-                                                                           List<FarmerListCrop> farmerListCrops) {
+                                                                    List<FarmerListCrop> farmerListCrops) {
 
-        HashMap<Integer, HashMap<String, ChangesDto>> changesCrop = new HashMap<>();
         ArrayList<Integer> checkedCrops = new ArrayList<>();
-//        log.info("start comparing crops data");
-//
-//        System.out.println("Crops in last audit");
-//        System.out.println(farmerListCrops_final);
-//
-//        System.out.println("Crops in this audit");
-//        System.out.println(farmerListCrops);
-
         ArrayList<HashMap<String, ChangesDto>> arrayList = new ArrayList<>();
-        for (FarmerListCropFinal crop_final : farmerListCrops_final) {
+        try {
+            for (FarmerListCropFinal crop_final : farmerListCrops_final) {
+                checkedCrops.add(crop_final.getCropID());
+                HashMap<String, ChangesDto> changesMap = new LinkedHashMap<>();
+                FarmerListCrop crop = farmerListCrops.stream()
+                        .filter(s -> s.getCropID() == crop_final.getCropID())
+                        .findFirst()
+                        .orElse(null);
 
-            checkedCrops.add(crop_final.getCropID());
-            HashMap<String, ChangesDto> changesMap = new LinkedHashMap<>();
+                if (crop == null) {
+                    FarmerListCrop farmerListCrop = new FarmerListCrop();
+                    farmerListCrop.setCropID(crop_final.getCropID());
+                    farmerListCrop.setRealYield(crop_final.getRealYield());
+                    farmerListCrop.setNoOfSesons(crop_final.getNoOfSesons());
+                    farmerListCrop.setEstiYield(crop_final.getEstiYield());
+                    farmerListCrop.setNoOfPlant(crop_final.getNoOfPlant());
+                    changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Crop deleted", crop_final.getCropID(), 0, farmerListCrop));
+//                changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(),"Crop deleted",crop_final.getCropID(), farmerListCrop));
+                    arrayList.add(changesMap);
+                } else {
 
-            FarmerListCrop crop = farmerListCrops.stream()
-                    .filter(s -> s.getCropID() == crop_final.getCropID())
-                    .findFirst()
-                    .orElse(null);
-
-            if (crop == null) {
-                changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(),"Crop deleted",crop_final.getCropID(), 0));
-//                changesCrop.put(crop_final.getCropID(), changesMap);
-                arrayList.add(changesMap);
-            } else {
-
-                if (crop_final.getNoOfPlant() != crop.getNoOfPlant()) {
-                    changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(),"Number of Plants",crop_final.getNoOfPlant(), crop.getNoOfPlant()));
-//                    changesCrop.put(crop_final.getCropID(), changesMap);
-                    arrayList.add(changesMap);
-                }
-                if (crop_final.getEstiYield() != crop.getEstiYield()) {
-                    changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(),"Estimated Yield (Kg) / year",crop_final.getNoOfPlant(), crop.getNoOfPlant()));
-//                    changesCrop.put(crop_final.getCropID(), changesMap);
-                    arrayList.add(changesMap);
-                }
-                if (crop_final.getRealYield() != crop.getRealYield()) {
-                    changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(),"Realistic Yield in Last year (kg)",crop_final.getNoOfPlant(), crop.getNoOfPlant()));
-//                    changesCrop.put(crop_final.getCropID(), changesMap);
-                    arrayList.add(changesMap);
-                }
-                if (crop_final.getNoOfSesons() != crop.getNoOfSesons()) {
-                    changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(),"Realistic Yield in Last year (kg)",crop_final.getNoOfPlant(), crop.getNoOfPlant()));
-//                    changesCrop.put(crop_final.getCropID(), changesMap);
-                    arrayList.add(changesMap);
+                    if (crop_final.getNoOfPlant() != crop.getNoOfPlant()) {
+                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Number of Plants", crop_final.getNoOfPlant(), crop.getNoOfPlant()));
+                        arrayList.add(changesMap);
+                    }
+                    if (crop_final.getEstiYield() != crop.getEstiYield()) {
+                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Estimated Yield (Kg) / year", crop_final.getNoOfPlant(), crop.getNoOfPlant()));
+                        arrayList.add(changesMap);
+                    }
+                    if (crop_final.getRealYield() != crop.getRealYield()) {
+                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), crop.getNoOfPlant()));
+                        arrayList.add(changesMap);
+                    }
+                    if (crop_final.getNoOfSesons() != crop.getNoOfSesons()) {
+                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), crop.getNoOfPlant()));
+                        arrayList.add(changesMap);
+                    }
                 }
             }
-        }
-        farmerListCrops.stream()
-                .filter(crop -> !checkedCrops.contains(crop.getCropID()))
-                .map(crop -> {
-                    HashMap<String, ChangesDto> changesMap = new LinkedHashMap<>();
-                    return arrayList.add(changesMap);
-//                    changesMap.put("cropChange", new ChangesDto(crop.getCropID(),"new crop added", 0, crop.getId()));
+
+            farmerListCrops.stream()
+                    .filter(crop -> !checkedCrops.contains(crop.getCropID()))
+                    .map(crop -> {
+                        HashMap<String, ChangesDto> changesMap = new LinkedHashMap<>();
+                        changesMap.put("cropChange", new ChangesDto(crop.getCropID(), "new crop added", 0, crop.getId(), crop));
+                        return arrayList.add(changesMap);
+
 //                    return changesCrop.put(crop.getCropID(), changesMap);
 
-                }).collect(Collectors.toList());
+                    }).collect(Collectors.toList());
+        } catch (Exception e) {
+            e.printStackTrace();
+            log.error("error occured while comparing crops " + e.getMessage());
+        }
+
         return arrayList;
     }
 
@@ -921,6 +932,8 @@ public class FileServiceNewTest {
                         .errorValue(convertCellValueToStringValue(cell))
                         .correctValue(String.valueOf(projectId))
                         .build());
+            }else{
+
             }
         } catch (IllegalStateException e) {
             errorList.add(ExcelErrorResponse.builder()
@@ -1337,48 +1350,67 @@ public class FileServiceNewTest {
 //    }
 
     private String convertCellValueToStringValue(Cell cell) {
-        CellType cellType = cell.getCellType();
-        switch (cellType) {
-            case STRING:
+        try {
+            CellType cellType = cell.getCellType();
+            switch (cellType) {
+                case STRING:
 //                System.out.println(cell.getStringCellValue().trim());
-                return cell.getStringCellValue().trim();
-            case NUMERIC:
+                    return cell.getStringCellValue().trim();
+                case NUMERIC:
 //                System.out.println(cell.getNumericCellValue() + "".trim());
-                return cell.getNumericCellValue() + "".trim();
-            case FORMULA:
-                return cell.getStringCellValue();
-            default:
-                return "";
+                    return cell.getNumericCellValue() + "".trim();
+                case FORMULA:
+                    return cell.getStringCellValue();
+                default:
+                    return "";
 
+            }
+        } catch (IllegalStateException e) {
+//            throw new IllegalStateException();
+            log.error(e.getMessage());
+        } catch (NullPointerException e) {
+//            throw new NullPointerException();
+            log.error(e.getMessage());
         }
-
+        return "";
     }
 
-    private double convertCellValueToNumberValue(Cell cell) {
-        CellType cellType = cell.getCellType();
+    private double convertCellValueToNumberValue(Cell cell, List<ExcelErrorResponse> errorList) {
+        try {
+            CellType cellType = cell.getCellType();
 //        System.out.println(cellType);
 
-        double val;
-        switch (cellType) {
-            case STRING:
+            double val;
+            switch (cellType) {
+                case STRING:
 //                System.out.println("String found");
-                val = Double.parseDouble(cell.getStringCellValue());
-                break;
-            case NUMERIC:
+                    val = Double.parseDouble(cell.getStringCellValue());
+                    break;
+                case NUMERIC:
 //                System.out.println("NUMERIC found");
-                val = cell.getNumericCellValue();
-                break;
-            case FORMULA:
+                    val = cell.getNumericCellValue();
+                    break;
+                case FORMULA:
 //                System.out.println("FORMULA found");
-                val = cell.getNumericCellValue();
-                break;
-            default:
-                val = 0d;
-                break;
+                    val = cell.getNumericCellValue();
+                    break;
+                default:
+                    val = 0d;
+                    break;
 
-        }
+            }
+            return val;
 //        log.info(className + ".convertCellValueToNumberValue : returning val " + val);
-        return val;
+        } catch (Exception e) {
+            errorList.add(ExcelErrorResponse
+                    .builder()
+                    .error("Invalid type used")
+                    .location(cell.getAddress() + "")
+                    .build());
+            return 0;
+        }
+
+
     }
 
 }

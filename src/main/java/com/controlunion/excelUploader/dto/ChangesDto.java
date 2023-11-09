@@ -1,5 +1,7 @@
 package com.controlunion.excelUploader.dto;
 
+import com.controlunion.excelUploader.model.Crop;
+import com.controlunion.excelUploader.model.FarmerListCrop;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -14,6 +16,7 @@ public class ChangesDto {
     private String current;
     private String change;
     private int cropId;
+    private FarmerListCrop crop;
 
     public ChangesDto(Number current) {
         this.current = String.valueOf(current);
@@ -28,6 +31,14 @@ public class ChangesDto {
         this.current = String.valueOf(current);
         this.change = chnage;
         this.cropId = cropId;
+    }
+
+    public ChangesDto(int cropId, String chnage, Number last, Number current, FarmerListCrop farmerListCrop) {
+        this.last = String.valueOf(last);
+        this.current = String.valueOf(current);
+        this.change = chnage;
+        this.cropId = cropId;
+        this.crop = farmerListCrop;
     }
 
     public ChangesDto(String last, String current) {
