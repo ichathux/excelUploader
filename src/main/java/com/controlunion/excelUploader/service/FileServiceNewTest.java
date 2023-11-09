@@ -99,39 +99,46 @@ public class FileServiceNewTest {
 //            log.error(className + ".readFile : until table start errors " + errorList);
 //            log.info(className + ".readFile : table start point : " + rowNumber);
             assert row != null;
+            System.out.println("start validating headers - 1");
             validate1stLevelHeaders(row, errorList);
+            System.out.println("end validating headers - 1");
             row = iterator.next();
+//            System.out.println("start validating headers - 2");
             validate2ndLevelHeaders(row, errorList, cropMapping, sheet);
+            System.out.println("end validating headers - 2");
             FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
             iterator.next();
             long lastCertifiedAuditId = planService.getLastCertifiedPlanForProId(proId).getPlanID();
             List<FarmerListFinal> fFinals = farmerListFinalService
                     .getAllFarmerListByProjectIdAndAuditId(proId, (int) lastCertifiedAuditId);
 
+            System.out.println("Read audit data start");
             FarmerListComparisonDto farmerListComparisonDto = readAuditData(iterator,
                     cropMapping,
                     errorList,
                     evaluator,
                     auditId,
                     proId, lastCertifiedAuditId, fFinals);
+            System.out.println("Read audit data done");
             workbook.close();
+            System.out.println("Is errorlist empty : " + errorList.size());
             if (errorList.isEmpty()) {
-                try{
+                try {
                     farmerLists = makeComparison(farmerListComparisonDto, fFinals);
 //                    System.out.println("new user count " + newUser);
                     return farmerListService.saveFarmerList(farmerLists);
-                } catch (DataIntegrityViolationException e){
+                } catch (DataIntegrityViolationException e) {
 //                    System.out.println("error");
                     errorList.add(ExcelErrorResponse.builder()
-                            .error("Data already contained. Project :"+projectName+" Audit : "+auditId).build());
+                            .error("Data already contained. Project :" + projectName + " Audit : " + auditId).build());
                     return ResponseEntity.badRequest().body(errorList);
-                } catch (Exception e){
+                } catch (Exception e) {
 //                    System.out.println("Err");
                     errorList.add(ExcelErrorResponse.builder()
                             .error(e.getMessage()).build());
-                    return ResponseEntity.ok().body(errorList);
+                    return ResponseEntity.badRequest().body(errorList);
                 }
-            }else{
+            } else {
                 log.error(className + ".errors while reading file " + errorList);
                 return ResponseEntity.badRequest().body(errorList);
             }
@@ -140,11 +147,13 @@ public class FileServiceNewTest {
             System.err.println(e.getMessage());
             errorList.add(ExcelErrorResponse.builder()
                     .error(e.getMessage()).build());
-            return ResponseEntity.ok().body(errorList);
-        }catch (Exception e){
+            return ResponseEntity.badRequest().body(errorList);
+        } catch (Exception e) {
+//            log.error(e.getMessage());
+            e.printStackTrace();
             errorList.add(ExcelErrorResponse.builder()
                     .error(e.getMessage()).build());
-            return ResponseEntity.ok().body(errorList);
+            return ResponseEntity.badRequest().body(errorList);
         }
 //        return ResponseEntity.ok().body(errorList);
     }
@@ -245,8 +254,8 @@ public class FileServiceNewTest {
                         break;
                     case 1:
 //                        System.out.println("reading Unit Number for EU / JAS "+ row.getRowNum());
-                        try{
-                            if (row.getRowNum() == 65){
+                        try {
+                            if (row.getRowNum() == 65) {
                                 System.out.println("**************************");
                                 System.out.println(cell);
                             }
@@ -254,8 +263,8 @@ public class FileServiceNewTest {
                             mandatory_fields.setUnitNoEUJAS(true);
 //                        log.info(className + ".readAuditData : Unit Number for EU / JAS : " + convertCellValueToStringValue(cell));
 
-                        }catch (Exception e){
-                            System.out.println("errrrrrrrrrr "+e.getMessage());
+                        } catch (Exception e) {
+                            System.out.println("errrrrrrrrrr " + e.getMessage());
                         }
 
                         break;
@@ -325,98 +334,7 @@ public class FileServiceNewTest {
                                 }
 
                             }
-////                            log.info("getting plot code early " + finalPlotCode);
-////                            farmerListFinal = farmerListFinalService.getFarmerByCodeAndProIdAndAuditId(farmerCode, proId, (int) lastCertifiedAuditId);
-//                            List<FarmerListFinal> fFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(proId, (int) lastCertifiedAuditId);
-//
-//                            FarmerListFinal ff = farmerListFinal
-//                                    .stream().filter(f -> f.getPlotCode().equals(finalPlotCode))
-//                                    .findFirst()
-//                                    .orElse(null);
-//
-//                            if (row.getCell(0) == null || convertCellValueToStringValue(cell).equals("")) {
-////                                log.info("cuid not contain in excel sheet");
-//                                if (farmerCodeVsCuid.containsKey(farmerCode)) {
-//                                    cuid = farmerCodeVsCuid.get(farmerCode);
-////                                    log.info("cuid already created for : " + farmerCode + " : cuid " + cuid);
-//                                } else {
-//                                    if (farmerListFinal == null || farmerListFinal.isEmpty()) {
-//                                        isNewFarmer = true;
-//                                        cuid = farmerListFinalService.createCuid();
-//                                        farmerCodeVsCuid.put(farmerCode, cuid);
-////                                        log.info("cuid created for : " + farmerCode + " : cuid " + cuid);
-//                                    } else {
-//                                        cuid = farmerListFinal.get(0).getCufarmerID();
-////                                        log.info("founb cuid for : " + farmerCode + " : cuid " + cuid);
-//                                    }
-//
-//                                    farmerCodeVsCuid.put(farmerCode, cuid);
-//                                }
-//                                if (!isNewFarmer) {
-//                                    errorList.add(ExcelErrorResponse.builder()
-//                                            .location("Row " + (row.getRowNum() + 1))
-//                                            .error("cuid must be insert")
-//                                            .correctValue(cuid + "").build());
-//                                    log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : need to insert - " + cuid);
-//                                }
-//                            } else {
-//                                if (farmerCodeVsCuid.containsKey(farmerCode)) {
-//                                    int cuidFinal = cuid;
-//                                    FarmerListFinal aFinal = fFinals.stream().filter( f -> f.getCufarmerID() == cuidFinal)
-//                                            .findFirst().orElse(null);
-//                                    if (aFinal == null){
-//                                        System.out.println("new farmer");
-//                                    }else{
-//                                        if (!farmerCode.equals(aFinal.getFarCodeEUJAS())){
-//                                            System.out.println("ciud missmatch");
-//                                        }else{
-//                                            farmerCodeVsCuid.put(farmerCode, cuid);
-//                                        }
-//                                    }
-////                                    if (cuid != farmerCodeVsCuid.get(farmerCode)) {
-////                                        errorList.add(ExcelErrorResponse.builder()
-////                                                .error("cuid not matched")
-////                                                .location("Cell " + row.getCell(0).getAddress())
-////                                                .errorValue(cuid + "")
-////                                                .build());
-////                                        log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : cuid used for another farmer - " + cuid);
-////                                    } else {
-////                                        cuid = farmerCodeVsCuid.get(farmerCode);
-//////                                        System.out.println(ff.getFarmerName());
-////                                        if (ff != null) {
-//////                                            log.info(className + ".readAuditData: adding farmerlistfinal to map: " + farmerCode + " plot " + plotCode);
-//////                                            farmarCodeMappingWithFarmListFinal.put(farmerCode + " plot " + finalPlotCode, ff);
-////                                        }
-////                                    }
-//                                } else {
-//                                    if (farmerListFinal == null || farmerListFinal.isEmpty()) {
-//                                        errorList.add(ExcelErrorResponse.builder()
-//                                                .location("Row " + (row.getRowNum() + 1))
-//                                                .error("invalid cuid. selected farmer not contain in the database")
-//                                                .build());
-//                                        log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : need to insert - " + cuid);
-//                                    } else {
-//                                        if (cuid != farmerListFinal.get(0).getCufarmerID()) {
-//                                            errorList.add(ExcelErrorResponse.builder()
-//                                                    .error("cuid not matched")
-//                                                    .location("Cell " + row.getCell(0).getAddress())
-//                                                    .errorValue(cuid + "")
-//                                                    .build());
-//                                            log.error(className + ".readAuditData: isNewFarmer - " + isNewFarmer + " : cuid used for another farmer - " + cuid);
-//                                        } else {
-//                                            cuid = farmerListFinal.get(0).getCufarmerID();
-//                                            farmerCodeVsCuid.put(farmerCode, cuid);
-//                                            if (ff != null) {
-////                                                log.info(className + "..readAuditData: adding farmerlistfinal to map: " + farmerCode + " plot " + plotCode);
-////                                                farmarCodeMappingWithFarmListFinal.put(farmerCode + " plot " + finalPlotCode, ff);
-//                                            }
-//                                        }
-//
-//                                    }
-//                                }
-//
-//                            }
-////                            log.info("created farmerlist final list");
+
                         } catch (NullPointerException e) {
                             log.error("null pointer occurred " + e.getMessage());
                             e.printStackTrace();
@@ -431,23 +349,55 @@ public class FileServiceNewTest {
                         userMap.putIfAbsent(cell.getStringCellValue().trim(), new ArrayList<>());
                         break;
                     case 3:
-                        farmerList.setUnitNoNOP(convertCellValueToStringValue(cell));
-                        mandatory_fields.setUnitNoNOP(true);
+                        try {
+                            farmerList.setUnitNoNOP(convertCellValueToStringValue(cell));
+                            mandatory_fields.setUnitNoNOP(true);
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Unit Number for NOP : " + convertCellValueToStringValue(cell));
                         break;
                     case 4:
-                        farmerList.setFarCodeNOP(convertCellValueToStringValue(cell));
-                        mandatory_fields.setFarCodeNOP(true);
+                        try {
+                            farmerList.setFarCodeNOP(convertCellValueToStringValue(cell));
+                            mandatory_fields.setFarCodeNOP(true);
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : farmer code for NOP : " + convertCellValueToStringValue(cell));
                         break;
                     case 5:
-                        farmerList.setFarmerName(convertCellValueToStringValue(cell));
-                        mandatory_fields.setFarmerName(true);
+                        try {
+                            farmerList.setFarmerName(convertCellValueToStringValue(cell));
+                            mandatory_fields.setFarmerName(true);
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Farmer Name : " + convertCellValueToStringValue(cell));
                         break;
                     case 6:
-                        farmerList.setFarmName(convertCellValueToStringValue(cell));
-                        mandatory_fields.setFarmName(true);
+                        try {
+                            farmerList.setFarmName(convertCellValueToStringValue(cell));
+                            mandatory_fields.setFarmName(true);
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Name of the Farm : " + convertCellValueToStringValue(cell));
                         break;
                     case 7:
@@ -482,12 +432,29 @@ public class FileServiceNewTest {
                         }
                         break;
                     case 9:
-                        farmerList.setGps(convertCellValueToStringValue(cell));
+                        try {
+                            farmerList.setGps(convertCellValueToStringValue(cell));
+
+                        } catch (IllegalStateException e) {
+                            log.error(className + ".readAuditData : Cell:" + cell.getAddress() + "" + e.getMessage());
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : GPS : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 10:
-                        farmerList.setAddress(convertCellValueToStringValue(cell));
+                        try {
+                            farmerList.setAddress(convertCellValueToStringValue(cell));
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Address/Village : " + convertCellValueToStringValue(cell));
 
                         break;
@@ -516,22 +483,54 @@ public class FileServiceNewTest {
                         }
                         break;
                     case 13:
-                        farmerList.setAplyRetrospe(convertCellValueToStringValue(cell).trim().equalsIgnoreCase("yes") ? 1 : 0);
+                        try {
+                            farmerList.setAplyRetrospe(convertCellValueToStringValue(cell).trim().equalsIgnoreCase("yes") ? 1 : 0);
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Applying for Retrospective consideration (Yes/No) : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 14:
-                        farmerList.setCertification(convertCellValueToStringValue(cell).replaceAll(",", "/"));
+                        try {
+                            farmerList.setCertification(convertCellValueToStringValue(cell).replaceAll(",", "/"));
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Certifications : " + certification);
 
                         break;
                     case 15:
-                        farmerList.setFertilizer(convertCellValueToStringValue(cell));
+                        try {
+                            farmerList.setFertilizer(convertCellValueToStringValue(cell));
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Types of fertilizer, pesticide used : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 16:
-                        farmerList.setFerUseDate(convertCellValueToStringValue(cell));
+                        try {
+                            farmerList.setFerUseDate(convertCellValueToStringValue(cell));
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + ".readAuditData : Last date of use : " + convertCellValueToStringValue(cell));
                         break;
                     case 17:
@@ -564,28 +563,67 @@ public class FileServiceNewTest {
                         }
                         break;
                     case 19:
-                        farmerList.setEujas_field(convertCellValueToStringValue(cell));
-                        mandatory_fields.setEujasField(true);
+                        try {
+                            farmerList.setEujas_field(convertCellValueToStringValue(cell));
+                            mandatory_fields.setEujasField(true);
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
+
 //                        log.info(className + "readAuditData : Field Status EU/JAS ic1/ic2/ic3/org : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 20:
-                        farmerList.setEujas_harvest(convertCellValueToStringValue(cell));
-                        mandatory_fields.setEujasHarvest(true);
+                        try {
+                            farmerList.setEujas_harvest(convertCellValueToStringValue(cell));
+                            mandatory_fields.setEujasHarvest(true);
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
+
 //                        log.info(className + "readAuditData : Harvest status EU/JAS conv/ic/org : " + convertCellValueToStringValue(cell));
 
                         break;
                     case 21:
-                        farmerList.setUsda_field(convertCellValueToStringValue(cell));
+                        try {
+                            farmerList.setUsda_field(convertCellValueToStringValue(cell));
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + "readAuditData : Field status NOP ic1/ic2/ic3/org : " + convertCellValueToStringValue(cell));
                         break;
                     case 22:
-                        farmerList.setUsda_harvest(convertCellValueToStringValue(cell));
+                        try {
+                            farmerList.setUsda_harvest(convertCellValueToStringValue(cell));
+
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 //                        log.info(className + "readAuditData : Harvest status NOP conv/org : " + convertCellValueToStringValue(cell));
                         break;
 //                    reading crop section
                     default:
-                        readingCropDatas(cropMapping, errorList, cuid, plotCode, row, farmerList, farmerListCropList, cell);
+                        try {
+                            readingCropDatas(cropMapping, errorList, cuid, plotCode, row, farmerList, farmerListCropList, cell);
+                        } catch (IllegalStateException e) {
+                            errorList.add(ExcelErrorResponse.builder()
+                                    .location("Cell:" + cell.getAddress())
+                                    .error("Invalid input type")
+                                    .build());
+                        }
 
                         break;
                 }
@@ -639,32 +677,32 @@ public class FileServiceNewTest {
 //                        System.out.println(crop.getCropName() + " : " + row.getCell(currentCellStart + i).getAddress());
                         switch (i) {
                             case 0:
-                                try{
+                                try {
                                     farmerListCrop.setNoOfPlant(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
 
-                                }catch (NullPointerException e){
+                                } catch (NullPointerException e) {
                                     farmerListCrop.setNoOfPlant(0);
                                 }
                                 break;
                             case 1:
-                                try{
+                                try {
                                     farmerListCrop.setEstiYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
 
-                                }catch (NullPointerException e){
+                                } catch (NullPointerException e) {
                                     farmerListCrop.setEstiYield(0);
                                 }
                                 break;
                             case 2:
-                                try{
+                                try {
                                     farmerListCrop.setRealYield(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
-                                }catch (NullPointerException e){
+                                } catch (NullPointerException e) {
                                     farmerListCrop.setRealYield(0);
                                 }
                                 break;
                             case 3:
-                                try{
+                                try {
                                     farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
-                                }catch (NullPointerException e){
+                                } catch (NullPointerException e) {
                                     farmerListCrop.setNoOfSesons(0);
                                 }
                                 break;
@@ -958,7 +996,7 @@ public class FileServiceNewTest {
                 XSSFCell cell = row.getCell(0);
                 String title = cell.getStringCellValue().trim().toLowerCase(Locale.ROOT);
                 String auditTitle = auditDetails.get(i);
-                System.out.println("validating - "+title);
+                System.out.println("validating - " + title);
                 if (!title.equalsIgnoreCase(auditTitle)) {
                     errorList.add(ExcelErrorResponse.builder()
                             .location("Cell " + cell.getAddress())
@@ -967,7 +1005,7 @@ public class FileServiceNewTest {
                             .correctValue(auditDetails.get(i))
                             .build());
                 } else {
-                    System.out.println("validating -else- "+title);
+                    System.out.println("validating -else- " + title);
                     switch (title) {
                         case "project name":
                             System.out.println("project mame");
@@ -990,28 +1028,30 @@ public class FileServiceNewTest {
     }
 
     private void validateProjectId(int projectId, XSSFRow row, List<ExcelErrorResponse> errorList) {
-        XSSFCell cell = row.getCell(1);
         try {
-            if (projectId != cell.getNumericCellValue()) {
+            XSSFCell cell = row.getCell(1);
+            try {
+                if (projectId != cell.getNumericCellValue()) {
+                    errorList.add(ExcelErrorResponse.builder()
+                            .location("Cell " + cell.getAddress())
+                            .error(Errors.PROJECT_CODE_MISMATCH.getName())
+                            .errorValue(convertCellValueToStringValue(cell))
+                            .correctValue(String.valueOf(projectId))
+                            .build());
+                } else {
+
+                }
+            } catch (IllegalStateException e) {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
-                        .error(Errors.PROJECT_CODE_MISMATCH.getName())
-                        .errorValue(convertCellValueToStringValue(cell))
+                        .error(Errors.REQUIRED_NUMBER_VALUE.getName())
+                        .errorValue(cell.getStringCellValue().trim())
                         .correctValue(String.valueOf(projectId))
                         .build());
-            }else{
-
             }
-        } catch (IllegalStateException e) {
-            errorList.add(ExcelErrorResponse.builder()
-                    .location("Cell " + cell.getAddress())
-                    .error(Errors.REQUIRED_NUMBER_VALUE.getName())
-                    .errorValue(cell.getStringCellValue().trim())
-                    .correctValue(String.valueOf(projectId))
-                    .build());
         } catch (NullPointerException e) {
             errorList.add(ExcelErrorResponse.builder()
-                    .location("Cell " + cell.getAddress())
+                    .location("Cell ")
                     .error(Errors.MANDATORY_CELL.getName())
                     .correctValue(String.valueOf(projectId))
                     .build());
@@ -1020,28 +1060,32 @@ public class FileServiceNewTest {
 
     private void validateProjectName(String projectName, XSSFRow row, List<ExcelErrorResponse> errorList) {
         System.out.println("Checkign project name");
-        XSSFCell cell = row.getCell(1);
         try {
-            if (!projectName.contentEquals(cell.getStringCellValue().trim())) {
+            XSSFCell cell = row.getCell(1);
+            try {
+
+                if (!projectName.contentEquals(cell.getStringCellValue().trim())) {
+                    errorList.add(ExcelErrorResponse.builder()
+                            .location("Cell " + cell.getAddress())
+                            .error(Errors.PROJECT_NAME_MISMATCH.getName())
+                            .errorValue(convertCellValueToStringValue(cell))
+                            .correctValue(projectName)
+                            .build());
+                    log.error(Errors.PROJECT_NAME_MISMATCH.getName() + "cell " + cell.getAddress());
+                } else {
+                    System.out.println("project name matched");
+                }
+            } catch (IllegalStateException e) {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
-                        .error(Errors.PROJECT_NAME_MISMATCH.getName())
-                        .errorValue(convertCellValueToStringValue(cell))
+                        .error(Errors.REQUIRED_TEXT_VALUE.getName())
+                        .errorValue(cell.getStringCellValue().trim())
                         .correctValue(projectName)
                         .build());
-            }else {
-                System.out.println("project name matched");
             }
-        } catch (IllegalStateException e) {
-            errorList.add(ExcelErrorResponse.builder()
-                    .location("Cell " + cell.getAddress())
-                    .error(Errors.REQUIRED_TEXT_VALUE.getName())
-                    .errorValue(cell.getStringCellValue().trim())
-                    .correctValue(projectName)
-                    .build());
         } catch (NullPointerException e) {
+            log.error(Errors.MANDATORY_CELL.getName());
             errorList.add(ExcelErrorResponse.builder()
-                    .location("Cell " + cell.getAddress())
                     .error(Errors.MANDATORY_CELL.getName())
                     .correctValue(String.valueOf(projectName))
                     .build());
@@ -1152,27 +1196,28 @@ public class FileServiceNewTest {
         for (Cell cell : row) {
             try {
                 if (excelFileProperties.getHeader1().containsKey(cell.getColumnIndex())) {
-                    if (!cell.getStringCellValue().trim().contentEquals(excelFileProperties.getHeader1().get(cell.getColumnIndex()).trim())) {
-                        System.out.println("************************************"+cell.getStringCellValue());
+                    if (!cell.getStringCellValue().equals(excelFileProperties.getHeader1().get(cell.getColumnIndex()))) {
                         errorList.add(ExcelErrorResponse.builder()
-                                .location("Cell * " + cell.getAddress())
+                                .location("Cell " + cell.getAddress())
                                 .error(Errors.INVALID_HEADER.getName())
-                                .errorValue(cell.getStringCellValue().trim())
+                                .errorValue(cell.getStringCellValue())
                                 .correctValue(excelFileProperties.getHeader1()
                                         .get(cell.getColumnIndex())).build());
+
                     }
                 }
             } catch (NullPointerException | IllegalStateException e) {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
                         .error(Errors.INVALID_HEADER.getName())
-                        .errorValue(cell.getStringCellValue().trim())
+                        .errorValue(cell.getStringCellValue())
                         .correctValue(excelFileProperties.getHeader1()
                                 .get(cell.getColumnIndex())).build());
 
             }
 
         }
+
     }
 
     private void validate2ndLevelHeaders(Row row,
@@ -1420,20 +1465,20 @@ public class FileServiceNewTest {
 
     private String convertCellValueToStringValue(Cell cell) {
 //        try {
-            CellType cellType = cell.getCellType();
-            switch (cellType) {
-                case STRING:
+        CellType cellType = cell.getCellType();
+        switch (cellType) {
+            case STRING:
 //                System.out.println(cell.getStringCellValue().trim());
-                    return cell.getStringCellValue().trim();
-                case NUMERIC:
+                return cell.getStringCellValue().trim();
+            case NUMERIC:
 //                System.out.println(cell.getNumericCellValue() + "".trim());
-                    return cell.getNumericCellValue() + "".trim();
-                case FORMULA:
-                    return cell.getStringCellValue().trim();
-                default:
-                    return cell.getStringCellValue().trim();
+                return cell.getNumericCellValue() + "".trim();
+            case FORMULA:
+                return cell.getStringCellValue().trim();
+            default:
+                return cell.getStringCellValue().trim();
 
-            }
+        }
 //        } catch (IllegalStateException e) {
 ////            throw new IllegalStateException();
 //            log.error(e.getMessage());
