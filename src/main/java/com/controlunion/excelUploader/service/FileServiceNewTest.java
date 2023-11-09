@@ -932,8 +932,9 @@ public class FileServiceNewTest {
 
             try {
                 XSSFCell cell = row.getCell(0);
-                String title = cell.getStringCellValue().trim();
+                String title = cell.getStringCellValue().trim().toLowerCase(Locale.ROOT);
                 String auditTitle = auditDetails.get(i);
+                System.out.println("validating - "+title);
                 if (!title.equalsIgnoreCase(auditTitle)) {
                     errorList.add(ExcelErrorResponse.builder()
                             .location("Cell " + cell.getAddress())
@@ -942,11 +943,14 @@ public class FileServiceNewTest {
                             .correctValue(auditDetails.get(i))
                             .build());
                 } else {
+                    System.out.println("validating -else- "+title);
                     switch (title) {
-                        case "Project Name":
+                        case "project name":
+                            System.out.println("project mame");
                             validateProjectName(projectName, row, errorList);
                             break;
-                        case "Project ID":
+                        case "project id":
+                            System.out.println("project id");
                             validateProjectId(projectId, row, errorList);
                             break;
 
@@ -991,15 +995,18 @@ public class FileServiceNewTest {
     }
 
     private void validateProjectName(String projectName, XSSFRow row, List<ExcelErrorResponse> errorList) {
+        System.out.println("Checkign project name");
         XSSFCell cell = row.getCell(1);
         try {
-            if (!projectName.equals(cell.getStringCellValue().trim())) {
+            if (!projectName.contentEquals(cell.getStringCellValue().trim())) {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
                         .error(Errors.PROJECT_NAME_MISMATCH.getName())
                         .errorValue(convertCellValueToStringValue(cell))
                         .correctValue(projectName)
                         .build());
+            }else {
+                System.out.println("project name matched");
             }
         } catch (IllegalStateException e) {
             errorList.add(ExcelErrorResponse.builder()
@@ -1028,7 +1035,6 @@ public class FileServiceNewTest {
             Row row = rowIterator.next();
 //            log.info("Iterating through rows until find table");
 //            log.info("actual row number " + row.getRowNum() + "native row number : " + rowNumber);
-
             if (isRowEmpty(row)) {
                 ExcelErrorResponse error = ExcelErrorResponse.builder().location("Row " + (row.getRowNum() + 1)).error(Errors.EMPTY_ROW.getName()).build();
                 if (!errorList.contains(error)) {
