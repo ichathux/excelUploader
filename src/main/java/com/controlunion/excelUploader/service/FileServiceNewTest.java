@@ -19,6 +19,7 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -115,21 +116,37 @@ public class FileServiceNewTest {
                     proId, lastCertifiedAuditId, fFinals);
             workbook.close();
             if (errorList.isEmpty()) {
-                farmerLists = makeComparison(farmerListComparisonDto, fFinals);
-                System.out.println("new user count " + newUser);
-                farmerListService.saveFarmerList(farmerLists);
+                try{
+                    farmerLists = makeComparison(farmerListComparisonDto, fFinals);
+//                    System.out.println("new user count " + newUser);
+                    return farmerListService.saveFarmerList(farmerLists);
+                } catch (DataIntegrityViolationException e){
+//                    System.out.println("error");
+                    errorList.add(ExcelErrorResponse.builder()
+                            .error("Data already contained. Project :"+projectName+" Audit : "+auditId).build());
+                    return ResponseEntity.badRequest().body(errorList);
+                } catch (Exception e){
+//                    System.out.println("Err");
+                    errorList.add(ExcelErrorResponse.builder()
+                            .error(e.getMessage()).build());
+                    return ResponseEntity.ok().body(errorList);
+                }
+            }else{
+                log.error(className + ".errors while reading file " + errorList);
+                return ResponseEntity.badRequest().body(errorList);
             }
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println(e.getMessage());
+            errorList.add(ExcelErrorResponse.builder()
+                    .error(e.getMessage()).build());
+            return ResponseEntity.ok().body(errorList);
+        }catch (Exception e){
+            errorList.add(ExcelErrorResponse.builder()
+                    .error(e.getMessage()).build());
+            return ResponseEntity.ok().body(errorList);
         }
-
-        if (!errorList.isEmpty()) {
-            log.error(className + ".errors while reading file " + errorList);
-            return ResponseEntity.badRequest().body(errorList);
-        }
-
-        return ResponseEntity.ok().body("done");
+//        return ResponseEntity.ok().body(errorList);
     }
 
     private FarmerListComparisonDto readAuditData(Iterator<Row> iterator,

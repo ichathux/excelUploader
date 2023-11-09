@@ -39,11 +39,12 @@ public class FarmerListService {
                 farmerlistRepository.save(farmerList);
             }
             log.info("saving user data to DB - success ");
-            return ResponseEntity.ok().body("Done");
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("error occurred while saving user data to DB : " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            throw e;
+//            return ResponseEntity.internalServerError().body(e.getMessage());
         }
 
     }
