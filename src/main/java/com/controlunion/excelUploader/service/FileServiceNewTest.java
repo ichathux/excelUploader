@@ -91,7 +91,7 @@ public class FileServiceNewTest {
             validateAuditHeaders(sheet, errorList, projectId, projectName);
 //            log.info(className + ".readFile : returned row number " + rowNumber);
 //            log.error(className + ".readFile : Audit headers errors " + errorList);
-            final Iterator<Row> iterator = sheet.iterator();
+            final Iterator<Row> iterator = sheet.rowIterator();
             Map<Integer, Crop> cropMapping = new LinkedHashMap<>();
             Row row = findTableStart(iterator, errorList, rowNumber + 1);
 //            log.info(className + ".readFile : returned row number " + rowNumber);
@@ -113,7 +113,7 @@ public class FileServiceNewTest {
                     evaluator,
                     auditId,
                     proId, lastCertifiedAuditId, fFinals);
-
+            workbook.close();
             if (errorList.isEmpty()) {
                 farmerLists = makeComparison(farmerListComparisonDto, fFinals);
                 System.out.println("new user count " + newUser);
@@ -162,6 +162,7 @@ public class FileServiceNewTest {
 //            System.out.println("*********************************new Row***********************");
             Row row = iterator.next();
             if (isRowEmpty(row)) {
+//                System.out.println("empty for found "+row.getRowNum());
                 continue;
             }
             final Iterator<Cell> cellIterator = row.cellIterator();
@@ -172,14 +173,22 @@ public class FileServiceNewTest {
             farmerList.setProID(proId);
 
             List<FarmerListCrop> farmerListCropList = new ArrayList<>();
-            while (cellIterator.hasNext()) {
+//            System.out.println(row);
+//            System.out.println("++++++++++++++++++++++++++++++++");
+//
+//            System.out.println("reading row "+row.getRowNum());
 
+            while (cellIterator.hasNext()) {
+//                if (row.getRowNum() == 69){
+//                    System.out.println(row);
+//                }
                 Cell cell = cellIterator.next();
-                if (cell.getColumnIndex() == 0) {
-                    if (cell.getCellType() == CellType.BLANK) {
-                        break;
-                    }
-                }
+
+//                if (cell.getColumnIndex() == 0) {
+//                    if (cell.getCellType() == CellType.BLANK) {
+//                        break;
+//                    }
+//                }
 
                 if (cell.getCellType() == CellType.BLANK) {
                     continue;
@@ -218,9 +227,19 @@ public class FileServiceNewTest {
                         }
                         break;
                     case 1:
-                        farmerList.setUnitNoEUJAS(convertCellValueToStringValue(cell));
-                        mandatory_fields.setUnitNoEUJAS(true);
+//                        System.out.println("reading Unit Number for EU / JAS "+ row.getRowNum());
+                        try{
+                            if (row.getRowNum() == 65){
+                                System.out.println("**************************");
+                                System.out.println(cell);
+                            }
+                            farmerList.setUnitNoEUJAS(convertCellValueToStringValue(cell));
+                            mandatory_fields.setUnitNoEUJAS(true);
 //                        log.info(className + ".readAuditData : Unit Number for EU / JAS : " + convertCellValueToStringValue(cell));
+
+                        }catch (Exception e){
+                            System.out.println("errrrrrrrrrr "+e.getMessage());
+                        }
 
                         break;
                     case 2:
@@ -1104,6 +1123,7 @@ public class FileServiceNewTest {
             try {
                 if (excelFileProperties.getHeader1().containsKey(cell.getColumnIndex())) {
                     if (!cell.getStringCellValue().trim().contentEquals(excelFileProperties.getHeader1().get(cell.getColumnIndex()).trim())) {
+                        System.out.println("************************************"+cell.getStringCellValue());
                         errorList.add(ExcelErrorResponse.builder()
                                 .location("Cell * " + cell.getAddress())
                                 .error(Errors.INVALID_HEADER.getName())
@@ -1369,7 +1389,7 @@ public class FileServiceNewTest {
 //    }
 
     private String convertCellValueToStringValue(Cell cell) {
-        try {
+//        try {
             CellType cellType = cell.getCellType();
             switch (cellType) {
                 case STRING:
@@ -1381,17 +1401,17 @@ public class FileServiceNewTest {
                 case FORMULA:
                     return cell.getStringCellValue().trim();
                 default:
-                    return "";
+                    return cell.getStringCellValue().trim();
 
             }
-        } catch (IllegalStateException e) {
-//            throw new IllegalStateException();
-            log.error(e.getMessage());
-        } catch (NullPointerException e) {
-//            throw new NullPointerException();
-            log.error(e.getMessage());
-        }
-        return "";
+//        } catch (IllegalStateException e) {
+////            throw new IllegalStateException();
+//            log.error(e.getMessage());
+//        } catch (NullPointerException e) {
+////            throw new NullPointerException();
+//            log.error(e.getMessage());
+//        }
+//        return "";
     }
 
     private double convertCellValueToNumberValue(Cell cell, List<ExcelErrorResponse> errorList) {

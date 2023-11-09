@@ -36,7 +36,7 @@ public class FarmerListService {
 //                }
 //                System.out.println(farmerListCrops.size());
 //                farmerList.setFarmerListCropList(farmerListCrops);
-                farmerlistRepository.save(farmerList);
+//                farmerlistRepository.save(farmerList);
             }
             log.info("saving user data to DB - success ");
             return ResponseEntity.ok().body("Done");
