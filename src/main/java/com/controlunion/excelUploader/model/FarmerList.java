@@ -2,6 +2,7 @@ package com.controlunion.excelUploader.model;
 
 import com.controlunion.excelUploader.model.comp_keys.FarmerListID;
 import com.controlunion.excelUploader.model.custom.FarmerCommon;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;

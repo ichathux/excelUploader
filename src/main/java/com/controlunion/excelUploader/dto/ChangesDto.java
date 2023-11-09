@@ -12,10 +12,8 @@ import java.io.Serializable;
 public class ChangesDto {
     private String last;
     private String current;
-
-    public ChangesDto(String current) {
-        this.current = current;
-    }
+    private String change;
+    private int cropId;
 
     public ChangesDto(Number current) {
         this.current = String.valueOf(current);
@@ -25,9 +23,20 @@ public class ChangesDto {
         this.last = String.valueOf(last);
         this.current = String.valueOf(current);
     }
+    public ChangesDto(int cropId, String chnage, Number last, Number current) {
+        this.last = String.valueOf(last);
+        this.current = String.valueOf(current);
+        this.change = chnage;
+        this.cropId = cropId;
+    }
 
     public ChangesDto(String last, String current) {
         this.last = last;
         this.current = current;
+    }
+    public ChangesDto(String chng, String last, String current) {
+        this.last = last;
+        this.current = current;
+        this.change = chng;
     }
 }
