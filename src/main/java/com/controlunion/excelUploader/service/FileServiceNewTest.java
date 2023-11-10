@@ -300,11 +300,15 @@ public class FileServiceNewTest {
                                     newUser++;
                                 } else {
 //                                    existing farmer send error message to user enter cuid
-                                    errorList.add(ExcelErrorResponse.builder()
-                                            .error("You must enter cuid ")
-                                            .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
-                                            .location("Row : " + (row.getRowNum() + 1))
-                                            .build());
+                                    cuid = farmerListFinal.getCufarmerID();
+
+//                                    errorList.add(ExcelErrorResponse.builder()
+//                                            .error("You must enter cuid ")
+//                                            .correctValue(String.valueOf(cuid))
+//                                            .location("Row : " + (row.getRowNum() + 1))
+//                                            .build());
+
+
                                 }
                             } else {
                                 farmerListFinal = fFinals.stream()
