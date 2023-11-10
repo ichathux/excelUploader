@@ -100,13 +100,14 @@ public class FileServiceNewTest {
 //            log.info(className + ".readFile : table start point : " + rowNumber);
             assert row != null;
             System.out.println("start validating headers - 1");
-            validate1stLevelHeaders(row, errorList);
+            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+            validate1stLevelHeaders(row, errorList, evaluator);
             System.out.println("end validating headers - 1");
             row = iterator.next();
 //            System.out.println("start validating headers - 2");
-            validate2ndLevelHeaders(row, errorList, cropMapping, sheet);
+            validate2ndLevelHeaders(row, errorList, cropMapping, sheet, evaluator);
             System.out.println("end validating headers - 2");
-            FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+
             iterator.next();
             long lastCertifiedAuditId = planService.getLastCertifiedPlanForProId(proId).getPlanID();
             List<FarmerListFinal> fFinals = farmerListFinalService
@@ -155,7 +156,7 @@ public class FileServiceNewTest {
                     .error(e.getMessage()).build());
             return ResponseEntity.badRequest().body(errorList);
         }
-//        return ResponseEntity.ok().body(errorList);
+//        return ResponseEntity.badRequest().body(errorList);
     }
 
     private FarmerListComparisonDto readAuditData(Iterator<Row> iterator,
@@ -962,10 +963,10 @@ public class FileServiceNewTest {
     private Cell isFormulaProceed(Cell cell,
                                   FormulaEvaluator evaluator) {
         try {
-//            log.info("**********Formular*********" + cell.getAddress());
+            log.info("**********Formular*********" + cell.getAddress());
             CellValue cellValue = evaluator.evaluate(cell);
             StringBuilder result = new StringBuilder(cellValue.formatAsString());
-//            log.info("evaluated result " + result);
+            log.info("evaluated result " + result);
 
             if (cellValue.getCellType() == CellType.NUMERIC) {
 //                log.info("setting formula evaluated value " + result + " parent cell type : ");
@@ -1192,8 +1193,13 @@ public class FileServiceNewTest {
 //    }
 
 
-    private void validate1stLevelHeaders(Row row, List<ExcelErrorResponse> errorList) {
+    private void validate1stLevelHeaders(Row row,
+                                         List<ExcelErrorResponse> errorList,
+                                         FormulaEvaluator evaluator) {
         for (Cell cell : row) {
+            if (cell.getCellType() == CellType.FORMULA) {
+                cell = isFormulaProceed(cell, evaluator);
+            }
             try {
                 if (excelFileProperties.getHeader1().containsKey(cell.getColumnIndex())) {
                     if (!cell.getStringCellValue().equals(excelFileProperties.getHeader1().get(cell.getColumnIndex()))) {
@@ -1223,7 +1229,8 @@ public class FileServiceNewTest {
     private void validate2ndLevelHeaders(Row row,
                                          List<ExcelErrorResponse> errorList,
                                          Map<Integer, Crop> cropMapping,
-                                         XSSFSheet sheet) {
+                                         XSSFSheet sheet,
+                                         FormulaEvaluator evaluator) {
 //        log.info("validating 2nd level headers " + row.getRowNum());
         final Iterator<Cell> cellIterator = row.iterator();
         int index = 0;
@@ -1231,6 +1238,9 @@ public class FileServiceNewTest {
         while (cellIterator.hasNext()) {
 //            log.info("iterating in header 2");
             Cell cell = cellIterator.next();
+            if (cell.getCellType() == CellType.FORMULA) {
+                cell = isFormulaProceed(cell, evaluator);
+            }
             try {
                 if (excelFileProperties.getHeader2().containsKey(cell.getColumnIndex())) {
                     if (!cell.getStringCellValue().trim().equals(excelFileProperties.getHeader2().get(cell.getColumnIndex()))) {
@@ -1258,14 +1268,15 @@ public class FileServiceNewTest {
             }
         }
 
-        validateCropsHeaders(cellIterator, errorList, cropMapping, sheet, index);
+        validateCropsHeaders(cellIterator, errorList, cropMapping, sheet, index, evaluator);
     }
 
     private void validateCropsHeaders(Iterator<Cell> cellIterator,
                                       List<ExcelErrorResponse> errorList,
                                       Map<Integer, Crop> cropMapping,
                                       XSSFSheet sheet,
-                                      int lastColNumber) {
+                                      int lastColNumber,
+                                      FormulaEvaluator evaluator) {
 //        System.out.println("ready validating crops " + lastColNumber);
         ArrayList<Cell> cells = new ArrayList<>();
         while (cellIterator.hasNext()) {
@@ -1274,6 +1285,9 @@ public class FileServiceNewTest {
 
         for (int i = 0; i < cells.size(); i += excelFileProperties.getHeader3().size()) {
             Cell cell = cells.get(i);
+            if (cell.getCellType() == CellType.FORMULA) {
+                cell = isFormulaProceed(cell, evaluator);
+            }
             if (cell.getCellType() == CellType.BLANK) {
                 errorList.add(ExcelErrorResponse.builder()
                         .location("Cell " + cell.getAddress())
