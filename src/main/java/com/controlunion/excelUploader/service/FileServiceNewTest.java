@@ -353,8 +353,8 @@ public class FileServiceNewTest {
 
                         farmerList.setCufarmerID(cuid);
 //                        farmerList.setIsNew(isNewFarmer ? 1 : 0);
-                        log.info(className + ".readAuditData : Farmer Code for EU / JAS : " + farmerCode
-                                + " checkUserIsExist : " + isNewFarmer + " cuid : " + cuid);
+//                        log.info(className + ".readAuditData : Farmer Code for EU / JAS : " + farmerCode
+//                                + " checkUserIsExist : " + isNewFarmer + " cuid : " + cuid);
                         userMap.putIfAbsent(cell.getStringCellValue().trim(), new ArrayList<>());
                         break;
                     case 3:
@@ -971,10 +971,10 @@ public class FileServiceNewTest {
     private Cell isFormulaProceed(Cell cell,
                                   FormulaEvaluator evaluator) {
         try {
-            log.info("**********Formular*********" + cell.getAddress());
+//            log.info("**********Formular*********" + cell.getAddress());
             CellValue cellValue = evaluator.evaluate(cell);
             StringBuilder result = new StringBuilder(cellValue.formatAsString());
-            log.info("evaluated result " + result);
+//            log.info("evaluated result " + result);
 
             if (cellValue.getCellType() == CellType.NUMERIC) {
 //                log.info("setting formula evaluated value " + result + " parent cell type : ");
@@ -1549,11 +1549,12 @@ public class FileServiceNewTest {
             return val;
 //        log.info(className + ".convertCellValueToNumberValue : returning val " + val);
         } catch (Exception e) {
-            errorList.add(ExcelErrorResponse
-                    .builder()
-                    .error("Invalid type used")
-                    .location(cell.getAddress() + "")
-                    .build());
+//            e.printStackTrace();
+//            errorList.add(ExcelErrorResponse
+//                    .builder()
+//                    .error("Invalid type used")
+//                    .location(cell.getAddress() + "")
+//                    .build());
             return 0;
         }
 
