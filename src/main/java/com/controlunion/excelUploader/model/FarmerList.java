@@ -28,8 +28,6 @@ public class FarmerList implements FarmerCommon {
 
     @Id
     @GeneratedValue
-//    @GeneratedValue(generator = "custom-generator")
-//    @GenericGenerator(name = "custom-generator", strategy = "com.controlunion.excelUploader.util.CustomIdentifierGenerator")
     @Column(name = "listid", nullable = true)
     private int listid;
     @Id

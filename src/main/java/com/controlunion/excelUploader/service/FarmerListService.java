@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 public class FarmerListService {
 
     private final FarmerlistRepository farmerlistRepository;
-//    private final FarmerListCropRepository farmerListCropRepository;
 
     @Transactional
     public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) {
@@ -29,35 +28,49 @@ public class FarmerListService {
         try {
             ArrayList<FarmerList> list = new ArrayList<>();
             ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
-            if (!farmerListsExist.isEmpty()){
+            System.out.println("alraedy conatin "+farmerListsExist.size());
+            if (!farmerListsExist.isEmpty()) {
                 for (FarmerList farmerList : farmerLists) {
-                        FarmerList fl = farmerListsExist.stream()
-                                .filter(f -> f.getCufarmerID() == farmerList.getCufarmerID()
-                                        && f.getPlotCode().contentEquals(farmerList.getPlotCode()))
-                                .findFirst().orElse(null);
-                        if (fl != null) {
-                            farmerList.setListid(fl.getListid());
-                            List<FarmerListCrop> farmerListCropsOld = fl.getFarmerListCropList();
-                            List<FarmerListCrop> farmerListCropsnew = new ArrayList<>();
-                            for (FarmerListCrop c :farmerListCropsOld){
-                                FarmerListCrop fc = farmerList.getFarmerListCropList().stream()
-                                        .filter(c1 -> c1.getCropID() == c.getCropID())
-                                        .findFirst()
-                                        .orElse(null);
-                                if (fc != null){
-                                    fc.setId(c.getId());
-                                }
-                                farmerListCropsnew.add(fc);
+                    FarmerList fl = farmerListsExist.stream()
+                            .filter(f -> f.getFarCodeEUJAS().equals(farmerList.getFarCodeEUJAS())
+                                    && f.getPlotCode().contentEquals(farmerList.getPlotCode()))
+                            .findFirst().orElse(null);
+
+                    if (fl != null) {
+
+                        farmerList.setListid(fl.getListid());
+                        List<FarmerListCrop> farmerListCropsnew = new ArrayList<>();
+
+                        for (FarmerListCrop c : fl.getFarmerListCropList()) {
+
+                            FarmerListCrop fc = farmerList.getFarmerListCropList().stream()
+                                    .filter(c1 -> c1.getCropID() == c.getCropID())
+                                    .findFirst()
+                                    .orElse(null);
+
+                            if (fc != null) {
+                                fc.setId(c.getId());
+                            }else{
+                                System.out.println(farmerList);
+                                System.out.println("Null crops "+c.getCropID()+" "+farmerList.getCufarmerID());
                             }
-                            farmerList.setFarmerListCropList(farmerListCropsnew);
-                            list.add(farmerList);
+                            farmerListCropsnew.add(fc);
+                        }
 
+                        farmerList.setFarmerListCropList(farmerListCropsnew);
 
-                        farmerlistRepository.saveAll(list);
+                    }else{
+                        System.out.println("no element found for "+farmerList.getCufarmerID()+" "+farmerList.getPlotCode());
                     }
-//                    System.out.println("start saving data");
+
+                    list.add(farmerList);
+
                 }
-            }else{
+
+                System.out.println("already contain in db");
+                farmerlistRepository.saveAll(list);
+            } else {
+                System.out.println("new farmerlist");
                 farmerlistRepository.saveAll(farmerLists);
             }
 
@@ -90,13 +103,13 @@ public class FarmerListService {
         System.out.println("Removing old data");
         ArrayList<FarmerList> farmerLists1 = new ArrayList<>();
 
-        for(FarmerList farmerList : farmerLists){
+        for (FarmerList farmerList : farmerLists) {
             FarmerList fl = farmerListsOld.stream()
                     .filter(f -> f.getCufarmerID() == farmerList.getCufarmerID() &&
-                    f.getPlotCode().contentEquals(farmerList.getPlotCode()))
+                            f.getPlotCode().contentEquals(farmerList.getPlotCode()))
                     .findFirst()
                     .orElse(null);
-            if (fl != null){
+            if (fl != null) {
                 farmerlistRepository.delete(fl);
                 farmerLists1.add(fl);
             }

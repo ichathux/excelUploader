@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -80,5 +81,13 @@ public class FarmerListFinalService {
 
     public List<FarmerListFinal> getAllFarmerListByProjectIdAndAuditId(int proId, int auditId){
         return farmerListFinalRepository.findAllByProIDAndAuditID(proId, auditId).orElse(null);
+    }
+
+    public void deleteFarmerListFinals(Collection<FarmerListFinal> values) {
+        try {
+            farmerListFinalRepository.deleteAll(values);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

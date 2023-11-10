@@ -14,6 +14,9 @@ import javax.persistence.*;
 @Entity(name = "farmerlist_crop_final")
 @IdClass(FarmerListCropFinalID.class)
 public class FarmerListCropFinal {
+//    @Id
+//    private int id;
+
     @Id
     private int cropID;
     @Id

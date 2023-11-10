@@ -55,7 +55,7 @@ public class FarmerListFinal implements FarmerCommon {
     private String eujas_harvest;
     private String usda_field;
     private String usda_harvest;
-//    @JsonManagedReference
-//    @OneToMany(mappedBy="farmerListFinal",cascade = {CascadeType.ALL})
-//    private List<FarmerListCropFinal> farmerListCropFinalList;
+    @JsonManagedReference
+    @OneToMany(mappedBy="farmerListFinal",cascade = {CascadeType.ALL})
+    private List<FarmerListCropFinal> farmerListCropFinalList;
 }
