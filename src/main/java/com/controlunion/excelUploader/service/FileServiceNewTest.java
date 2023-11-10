@@ -1428,13 +1428,13 @@ public class FileServiceNewTest {
                     .build());
 
         }
-        if (!mandatory_fields.isStartingDateCon()) {
-            errorList.add(ExcelErrorResponse.builder()
-                    .location("Row:" + row)
-                    .error("Starting date of Conversion period (yyyy-mm-dd) is mandatory.")
-                    .build());
-
-        }
+//        if (!mandatory_fields.isStartingDateCon()) {
+//            errorList.add(ExcelErrorResponse.builder()
+//                    .location("Row:" + row)
+//                    .error("Starting date of Conversion period (yyyy-mm-dd) is mandatory.")
+//                    .build());
+//
+//        }
 //        if (!mandatory_fields.isStartingDateOrg()) {
 //            errorList.add(ExcelErrorResponse.builder()
 //                    .location("Row:" + row)
@@ -1449,13 +1449,13 @@ public class FileServiceNewTest {
 //                    .build());
 //
 //        }
-        if (!mandatory_fields.isEujasHarvest()) {
-            errorList.add(ExcelErrorResponse.builder()
-                    .location("Row:" + row)
-                    .error("Harvest status EU/JAS conv/ic/org is mandatory.")
-                    .build());
-
-        }
+//        if (!mandatory_fields.isEujasHarvest()) {
+//            errorList.add(ExcelErrorResponse.builder()
+//                    .location("Row:" + row)
+//                    .error("Harvest status EU/JAS conv/ic/org is mandatory.")
+//                    .build());
+//
+//        }
 
     }
 
