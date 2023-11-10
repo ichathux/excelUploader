@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,23 +27,32 @@ public class FarmerListDeletedService {
     private final FarmerlistDeletedRepository farmerlistDeletedRepository;
     private final FarmerListFinalService farmerListFinalService;
 
-    public void addDataToFarmListDeleted(Collection<FarmerListFinal> values) {
+    public void addDataToFarmListDeleted(List<FarmerListFinal> values,
+                                         int auditID) {
         try {
+
+            System.out.println(":Setting audit id : " + auditID);
             Timestamp currentDateTime = new Timestamp(System.currentTimeMillis());
-            List<FarmerList_deleted> farmerList_deleteds = values.stream().map(f -> {
+            List<FarmerList_deleted> farmerList_deleteds =
+                    values
+                            .stream()
+                            .map(
+                                    (f) -> {
+                                        FarmerList_deleted farmerList_deleted = FarmerlistFinalMapper.INSTANCE.farmerListFinalToFarmerListDeleted(f);
+                                        farmerList_deleted.setAuditID(auditID);
+                                        farmerList_deleted.setUser("isuru");
+                                        farmerList_deleted.setSysTimeStamp(new Date(currentDateTime.getTime()));
+                                        List<FarmerListCrop_deleted> farmerListCropFinals =
+                                                f.getFarmerListCropFinalList()
+                                                        .stream()
+                                                        .map(FarmerlistCropFinalMapper.INSTANCE::farmerListCropFinalToFarmerListCropDeleted)
+                                                        .collect(Collectors.toList());
+                                        farmerList_deleted.setFarmerListCropList(farmerListCropFinals);
+                                        return farmerList_deleted;
+                                    })
+                            .collect(Collectors.toList());
 
-                        FarmerList_deleted farmerList_deleted = FarmerlistFinalMapper.INSTANCE.farmerListFinalToFarmerListDeleted(f);
-                        farmerList_deleted.setUser("isuru");
-                        farmerList_deleted.setSysTimeStamp(new Date(currentDateTime.getTime()));
-                        List<FarmerListCrop_deleted> farmerListCropFinals = f.getFarmerListCropFinalList().stream()
-                                .map(FarmerlistCropFinalMapper.INSTANCE::farmerListCropFinalToFarmerListCropDeleted)
-                                .collect(Collectors.toList());
-                        farmerList_deleted.setFarmerListCropList(farmerListCropFinals);
-                        return farmerList_deleted;
-                    })
-                    .collect(Collectors.toList());
-
-            System.out.println(farmerList_deleteds);
+//            System.out.println(farmerList_deleteds);
 
             farmerlistDeletedRepository.saveAll(farmerList_deleteds);
 
@@ -53,5 +63,17 @@ public class FarmerListDeletedService {
 
 //        return farmerlistDeletedRepository.saveAll(values);
 //        return null;
+    }
+
+    public List<FarmerList_deleted> getAllByProIdAndAuditId(int proID, int auditId) {
+        log.info(getClass().getName() + ".getAllByProIdAndAuditId proID : " + proID + " auditID : " + auditId);
+        try {
+            return farmerlistDeletedRepository
+                    .findAllByProIDAndAuditID(proID, auditId)
+                    .orElse(new ArrayList<>());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
     }
 }

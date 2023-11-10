@@ -16,16 +16,7 @@ public class ChangesDto {
     private String current;
     private String change;
     private int cropId;
-    private FarmerListCrop crop;
 
-    public ChangesDto(Number current) {
-        this.current = String.valueOf(current);
-    }
-
-    public ChangesDto(Number last, Number current) {
-        this.last = String.valueOf(last);
-        this.current = String.valueOf(current);
-    }
     public ChangesDto(int cropId, String chnage, Number last, Number current) {
         this.last = String.valueOf(last);
         this.current = String.valueOf(current);
@@ -33,18 +24,8 @@ public class ChangesDto {
         this.cropId = cropId;
     }
 
-    public ChangesDto(int cropId, String chnage, Number last, Number current, FarmerListCrop farmerListCrop) {
-        this.last = String.valueOf(last);
-        this.current = String.valueOf(current);
-        this.change = chnage;
-        this.cropId = cropId;
-        this.crop = farmerListCrop;
-    }
 
-    public ChangesDto(String last, String current) {
-        this.last = last;
-        this.current = current;
-    }
+
     public ChangesDto(String chng, String last, String current) {
         this.last = last;
         this.current = current;
