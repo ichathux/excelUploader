@@ -1,6 +1,7 @@
 package com.controlunion.excelUploader.service;
 
 import com.controlunion.excelUploader.model.FarmerListCrop;
+import com.controlunion.excelUploader.model.FarmerListCropFinal;
 import com.controlunion.excelUploader.model.FarmerListFinal;
 import com.controlunion.excelUploader.model.comp_keys.FarmerListCropFinalID;
 import com.controlunion.excelUploader.repository.FarmerListCropFinalRepository;
@@ -17,32 +18,20 @@ public class FarmerListFinalCropsService {
 
     private final FarmerListCropFinalRepository repository;
 
-    public void deleteFarmerListCropFinalByProId() {
-        try {
-//            repository.deleteAllById();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public void deleteFarmerListCropFinalByFarmerListFinal(List<FarmerListFinal> farmerListsFarmerListFinals) {
         try {
-            ArrayList<FarmerListCropFinalID> list = new ArrayList<>();
-            for (FarmerListFinal farmerListFinal : farmerListsFarmerListFinals) {
-
-                List<FarmerListCropFinalID> farmerListCropFinalIDS = farmerListFinal.getFarmerListCropFinalList().stream()
-                        .map(f -> {
-                            FarmerListCropFinalID fid = new FarmerListCropFinalID();
-                            fid.setCropID(f.getCropID());
-                            fid.setCufarmerID(f.getCufarmerID());
-                            fid.setPlotCode(f.getPlotCode());
-                            list.add(fid);
-                            return fid;
-                        }).collect(Collectors.toList());
-
-            }
-            System.out.println("fid list " + list);
-            repository.deleteAllById(list);
+            ArrayList<FarmerListCropFinal>  farmerListCropFinals = new ArrayList<>();
+////            FarmerListCropFinal farmerListCropFinal = new FarmerListCropFinal();
+//            farmerListsFarmerListFinals.get(0).getFarmerListCropFinalList()
+//            for (FarmerListFinal farmerListFinal : farmerListsFarmerListFinals) {
+//                System.out.println("Deleting "+farmerListFinal.getCufarmerID());
+//                repository.deleteAllByFarmerListFinal(farmerListFinal);
+//            }
+        farmerListsFarmerListFinals.stream().forEach(f -> farmerListCropFinals.addAll(f.getFarmerListCropFinalList()));
+//            System.out.println(farmerListCropFinals);
+//            repository.deleteAllById(list);
+            repository.deleteAll(farmerListCropFinals);
         }catch (Exception e){
             e.printStackTrace();
         }

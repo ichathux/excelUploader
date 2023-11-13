@@ -19,21 +19,38 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
 
     public ResponseEntity<List<Projects>> getAllProjects() {
-        return ResponseEntity.ok().body(projectRepository.findAll());
+        try{
+            return ResponseEntity.ok().body(projectRepository.findAll());
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     public ResponseEntity<List<ProjectDto>> getProjectsByName(String name) {
-        List<Projects> projects = projectRepository.findByProNameContaining(name).orElseThrow(() -> new RuntimeException("No projects found for given name"));
+        try {
+            List<Projects> projects = projectRepository
+                    .findByProNameContaining(name)
+                    .orElseThrow(() -> new RuntimeException("No projects found for given name"));
 
-        return ResponseEntity
-                .ok(
-                        projects.stream()
-                                .map(p -> ProjectMapper.INSTANCE.projectsToProjectDto(p))
-                                .collect(Collectors.toList()
-                                ));
+            return ResponseEntity
+                    .ok(projects.stream()
+                                    .map(p -> ProjectMapper.INSTANCE.projectsToProjectDto(p))
+                                    .collect(Collectors.toList()
+                                    ));
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+
     }
 
     public Projects getProjectByProjectId(long proId) {
-        return projectRepository.findById(proId).orElse(null);
+        try {
+            return projectRepository.findById(proId).orElse(null);
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
     }
 }

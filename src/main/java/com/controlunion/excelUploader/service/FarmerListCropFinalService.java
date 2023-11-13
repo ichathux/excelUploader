@@ -19,7 +19,8 @@ public class FarmerListCropFinalService {
     private final FarmerListCropFinalRepository repository;
 
     public List<FarmerListCropFinal> findFarmerListCropFinalsForFarmerFarmerListFinal(FarmerListFinal farmerListFinal){
-        return repository.findAllByFarmerListFinal(farmerListFinal).orElseThrow(() -> new NullPointerException("No crops found for farmer "+farmerListFinal.getCufarmerID()));
+        return repository.findAllByFarmerListFinal(farmerListFinal)
+                .orElseThrow(() -> new NullPointerException("No crops found for farmer "+farmerListFinal.getCufarmerID()));
     }
 
 }

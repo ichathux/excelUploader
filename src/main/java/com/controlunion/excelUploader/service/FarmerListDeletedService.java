@@ -51,18 +51,11 @@ public class FarmerListDeletedService {
                                         return farmerList_deleted;
                                     })
                             .collect(Collectors.toList());
-
-//            System.out.println(farmerList_deleteds);
-
             farmerlistDeletedRepository.saveAll(farmerList_deleteds);
-
             farmerListFinalService.deleteFarmerListFinals(values);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-//        return farmerlistDeletedRepository.saveAll(values);
-//        return null;
     }
 
     public List<FarmerList_deleted> getAllByProIdAndAuditId(int proID, int auditId) {

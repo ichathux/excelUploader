@@ -14,4 +14,5 @@ public interface FarmerlistRepository extends CrudRepository<FarmerList, FarmerL
 
 //    Optional<List<FarmerList>> findAllByProIDAndAuditID(int proId, int auditId);
     Optional<ArrayList<FarmerList>> findAllByProIDAndAuditID(int proId, int auditId);
+    void deleteAllByProIDAndAuditID(int proId, int auditId);
 }

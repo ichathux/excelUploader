@@ -28,32 +28,42 @@ public class PlanService {
     private final FarmerListFinalCropsService farmerListFinalCropsService;
 
     public ResponseEntity<List<PlanDto>> getAllPlansForProId(long proID) {
-
-        Optional<List<Plan>> plans = planRepository.findAllByProID(projectService.getProjectByProjectId(proID));
-        if (plans.isPresent()) {
-            List<PlanDto> planDtos = new ArrayList<>();
-            for (Plan plan : plans.get()) {
-                planDtos.add(PlanMapper.INSTANCE.planToPlanDto(plan));
+        try{
+            Optional<List<Plan>> plans = planRepository.findAllByProID(projectService.getProjectByProjectId(proID));
+            if (plans.isPresent()) {
+                List<PlanDto> planDtos = new ArrayList<>();
+                for (Plan plan : plans.get()) {
+                    planDtos.add(PlanMapper.INSTANCE.planToPlanDto(plan));
+                }
+                return ResponseEntity.ok(planDtos);
             }
-            return ResponseEntity.ok(planDtos);
+            return ResponseEntity.noContent().build();
+        }catch (Exception e){
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
         }
-        return ResponseEntity.noContent().build();
+
     }
 
     public Plan getLastCertifiedPlanForProId(int auditId, long proID) {
-        log.info("Getting last certified Plan for proId: " + proID);
-
-        Optional<Plan> plan = planRepository.findTopOneByProIDAndCertifiedOrderByPlanIDDesc(projectService.getProjectByProjectId(proID), true);
+        try{
+            log.info("Getting last certified Plan for proId: " + proID);
+            Optional<Plan> plan = planRepository.findTopOneByProIDAndCertifiedOrderByPlanIDDesc(
+                    projectService.getProjectByProjectId(proID),
+                    true);
 //        Optional<Plan> plan = planRepository.findTopByPlanIDLessThanAndProIDAndCertified(auditId, (int) proID, true);
+            return plan.orElse(null);
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
 
-        log.info("Last certified Plan: " + plan.get().getAuditNo() + " for proId: " + proID+" last audit id : "+plan.get().getPlanID());
-        return plan.orElse(null);
     }
 
-    public Plan getPlanById(int auditId){
-        try{
+    public Plan getPlanById(int auditId) {
+        try {
             return planRepository.findById(Long.valueOf(auditId)).orElse(null);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -62,22 +72,28 @@ public class PlanService {
 
     @Transactional
     public ResponseEntity<Plan> certifyFarmerList(int auditId) {
-        Plan plan = getPlanById(auditId);
-        if (plan != null) {
-            plan.setCertified(true);
-            plan.setCertifyBy("isuru");
-            plan.setCertifier(10);
-        }
-        Plan plan1 = certifyPlan(plan);
-        if (plan1 != null) {
-
-            return ResponseEntity.ok(plan1);
-        } else
+        try {
+            Plan plan = getPlanById(auditId);
+            if (plan != null) {
+                plan.setCertified(true);
+                plan.setCertifyBy("isuru");
+                plan.setCertifier(10);
+            }
+            Plan plan1 = certifyPlan(plan);
+            if (plan1 != null) {
+                System.out.println("Done certifying");
+                return ResponseEntity.ok(plan1);
+            }else
+                return ResponseEntity.internalServerError().build();
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
+        }
+
     }
 
     public Plan certifyPlan(Plan plan) {
-        try{
+        try {
             List<FarmerList> farmerLists = farmerListService.getFarmListForProIdAndAuditId2(
                     plan.getProID().getId().intValue(),
                     plan.getPlanID().intValue());
@@ -86,16 +102,29 @@ public class PlanService {
                     plan.getProID().getId().intValue(),
                     plan.getPlanID().intValue());
 
-            farmerListFinalCropsService.deleteFarmerListCropFinalByFarmerListFinal(farmerListsFarmerListFinals);
-            farmerListFinalService.deleteFarmerListFinalByProId(plan.getProID().getId().intValue());
-            farmerListService.deleteFromFarmerList(farmerLists);
-
-            farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
-                    plan.getProID().getId().intValue(),
-                    plan.getPlanID().intValue());
-            farmerListFinalService.saveToFarmerListFinal(farmerLists);
-            return planRepository.save(plan);
-        }catch (Exception e){
+            if (farmerListsFarmerListFinals.isEmpty()){
+                System.out.println("no prev finals");
+                farmerListService.deleteFromFarmerList(farmerLists);
+                farmerListFinalService.saveToFarmerListFinal(farmerLists);
+                return planRepository.save(plan);
+            }else{
+                System.out.println("have prev finals"+farmerListsFarmerListFinals.size());
+                System.out.println("deleting prev crops final");
+                farmerListFinalCropsService.deleteFarmerListCropFinalByFarmerListFinal(farmerListsFarmerListFinals);
+                System.out.println("deleting prev farmerlist final");
+                farmerListFinalService.deleteFarmerListFinals(farmerListsFarmerListFinals);
+                System.out.println("deleting prev farmerlist");
+                farmerListService.deleteFromFarmerList(farmerLists);
+                System.out.println("getting new farmerlist");
+                farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
+                        plan.getProID().getId().intValue(),
+                        plan.getPlanID().intValue());
+                System.out.println("save farmerlist final new");
+                farmerListFinalService.saveToFarmerListFinal(farmerLists);
+                System.out.println("save plan");
+                return planRepository.save(plan);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
