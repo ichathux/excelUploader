@@ -25,6 +25,7 @@ public class PlanService {
     private final ProjectService projectService;
     private final FarmerListFinalService farmerListFinalService;
     private final FarmerListService farmerListService;
+    private final FarmerListFinalCropsService farmerListFinalCropsService;
 
     public ResponseEntity<List<PlanDto>> getAllPlansForProId(long proID) {
 
@@ -77,11 +78,22 @@ public class PlanService {
 
     public Plan certifyPlan(Plan plan) {
         try{
-            List<FarmerList> farmerLists = farmerListService.getFarmListForProIdAndAuditId2(plan.getProID().getId().intValue(), plan.getPlanID().intValue());
-//            List<FarmerListFinal> farmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(plan.getProID().getId().intValue(), plan.getPlanID().intValue());
-//            farmerListFinalService.deleteFarmerListFinals();
-            farmerListFinalService.saveToFarmerListOnFarmerListFinal(farmerLists);
+            List<FarmerList> farmerLists = farmerListService.getFarmListForProIdAndAuditId2(
+                    plan.getProID().getId().intValue(),
+                    plan.getPlanID().intValue());
+
+            List<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
+                    plan.getProID().getId().intValue(),
+                    plan.getPlanID().intValue());
+
+            farmerListFinalCropsService.deleteFarmerListCropFinalByFarmerListFinal(farmerListsFarmerListFinals);
+            farmerListFinalService.deleteFarmerListFinalByProId(plan.getProID().getId().intValue());
             farmerListService.deleteFromFarmerList(farmerLists);
+
+            farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
+                    plan.getProID().getId().intValue(),
+                    plan.getPlanID().intValue());
+            farmerListFinalService.saveToFarmerListFinal(farmerLists);
             return planRepository.save(plan);
         }catch (Exception e){
             e.printStackTrace();

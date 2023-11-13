@@ -13,4 +13,6 @@ import java.util.Optional;
 public interface FarmerListCropFinalRepository extends JpaRepository<FarmerListCropFinal, FarmerListCropFinalID> {
 
     Optional<List<FarmerListCropFinal>> findAllByFarmerListFinal(FarmerListFinal farmerListFinal);
+
+    void deleteAllByFarmerListFinal(FarmerListFinal farmerListFinal);
 }

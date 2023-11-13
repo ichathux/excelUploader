@@ -99,8 +99,12 @@ public class FarmerListFinalService {
             e.printStackTrace();
         }
     }
+    public void deleteFarmerListFinalByProId(int proID){
+        farmerListFinalRepository.deleteAllByProID(proID);
+        System.out.println("farmer list Final deleted");
+    }
 
-    public List<FarmerListFinal> saveToFarmerListOnFarmerListFinal(List<FarmerList> farmerLists){
+    public List<FarmerListFinal> saveToFarmerListFinal(List<FarmerList> farmerLists){
         ArrayList<FarmerListFinal> farmerListFinals = new ArrayList<>();
         for (FarmerList farmerList : farmerLists){
             FarmerListFinal farmerListFinal = FarmerlistMapper.INSTANCE.farmerListToFarmerListFinal(farmerList);
@@ -123,6 +127,7 @@ public class FarmerListFinalService {
     public List<FarmerListFinal> getBeforeCertifiedFarmLIstFinal(int proId, int auditId){
         return farmerListFinalRepository.findAllByProIDAndAuditIDIsLessThanOrderByListid(proId, auditId).orElse(new ArrayList<>());
     }
+
 
 
 }

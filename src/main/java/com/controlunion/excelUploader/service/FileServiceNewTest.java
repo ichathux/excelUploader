@@ -313,98 +313,98 @@ public class FileServiceNewTest {
                         FarmerListFinal farmerListFinal;
                         String finalPlotCode = convertCellValueToStringValue(row.getCell(7), errorList);
                         try {
-//                            if (row.getCell(0) == null || convertCellValueToStringValue(cell, errorList).trim().equals("")) {
-////                                System.out.println("empty cuid");
-//                                farmerListFinal = fFinals.stream()
-//                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
-//                                        .findAny()
-//                                        .orElse(null);
-////                                System.out.println(farmerListFinal.getFarmerName());
-//                                if (farmerListFinal == null) {
-////                                    System.out.println("empty cuid-new farmer");
-//                                    farmerList.setIsNew(1);
-////                                    new user
-//                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
-//                                        cuid = farmerCodeVsCuid.get(farmerCode);
-//                                    } else {
-//                                        cuid = farmerListFinalService.createCuid();
-//                                        farmerCodeVsCuid.put(farmerCode, cuid);
-//                                    }
-//                                    newUser++;
-//                                } else {
-////                                    System.out.println("empty cuid-existing farmer");
-////                                    existing farmer send error message to user enter cuid
-//                                    cuid = farmerListFinal.getCufarmerID();
-//                                    farmerList.setListid(0);
-////                                    errorList.add(ExcelErrorResponse.builder()
-////                                            .error("You must enter cuid ")
-////                                            .correctValue(String.valueOf(cuid))
-////                                            .location("Row : " + (row.getRowNum() + 1))
-////                                            .build());
-//                                }
-//                            } else {
-//
-////                                System.out.println("contain cuid");
-//                                farmerListFinal = fFinals.stream()
-//                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
-//                                        .findAny()
-//                                        .orElse(null);
-//
-//                                if (farmerListFinal == null) {
-//                                    int finalCuid = cuid;
-//                                    farmerListFinal = fFinals.stream()
-//                                            .filter( f -> f.getCufarmerID() == finalCuid)
-//                                            .findAny().orElse(null);
-//                                    if (farmerListFinal != null){
-//                                        System.out.println("found invalid farmer code for cuid "+cuid);
-//                                        farmerCode = farmerList.getFarCodeEUJAS();
-//                                    }else{
-//                                        farmerList.setIsNew(1);
-//                                        if (farmerCodeVsCuid.containsKey(farmerCode)) {
-//                                            cuid = farmerCodeVsCuid.get(farmerCode);
-//                                        } else {
-//                                            cuid = farmerListFinalService.createCuid();
-//                                            farmerCodeVsCuid.put(farmerCode, cuid);
-//                                        }
-//                                    }
-//
-////                                    farmerList.setIsNew(1);
-//                                } else {
-////                                    System.out.println("contain cuid-existing farmer");
-//                                    if (cuid != farmerListFinal.getCufarmerID()) {
-////                                        System.out.println("contain cuid-existing farmer-wrong cuid");
-////                                    cuid not matched send error message to user
-////                                        errorList.add(ExcelErrorResponse.builder()
-////                                                .error("cuid not matched")
-////                                                .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
-////                                                .location("Row : " + (row.getRowNum() + 1))
-////                                                .build());
-////                                        cuid = farmerListFinal.getCufarmerID();
-//
-//                                    }
-//
-//                                    cuid = farmerListFinal.getCufarmerID();
-//                                    farmerList.setIsNew(0);
-//                                }
-//
-//                            }
-
-                            farmerListFinal = fFinals.stream()
-                                    .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
-                                    .findAny()
-                                    .orElse(null);
-                            if (farmerListFinal != null){
-                                cuid = farmerListFinal.getCufarmerID();
-                                farmerList.setIsNew(0);
-                            }else{
-                                farmerList.setIsNew(1);
-                                if (farmerCodeVsCuid.containsKey(farmerCode)) {
-                                    cuid = farmerCodeVsCuid.get(farmerCode);
+                            if (row.getCell(0) == null || convertCellValueToStringValue(cell, errorList).trim().equals("")) {
+//                                System.out.println("empty cuid");
+                                farmerListFinal = fFinals.stream()
+                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
+                                        .findAny()
+                                        .orElse(null);
+//                                System.out.println(farmerListFinal.getFarmerName());
+                                if (farmerListFinal == null) {
+//                                    System.out.println("empty cuid-new farmer");
+                                    farmerList.setIsNew(1);
+//                                    new user
+                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                        cuid = farmerCodeVsCuid.get(farmerCode);
+                                    } else {
+                                        cuid = farmerListFinalService.createCuid();
+                                        farmerCodeVsCuid.put(farmerCode, cuid);
+                                    }
+                                    newUser++;
                                 } else {
-                                    cuid = farmerListFinalService.createCuid();
-                                    farmerCodeVsCuid.put(farmerCode, cuid);
+//                                    System.out.println("empty cuid-existing farmer");
+//                                    existing farmer send error message to user enter cuid
+                                    cuid = farmerListFinal.getCufarmerID();
+                                    farmerList.setListid(0);
+//                                    errorList.add(ExcelErrorResponse.builder()
+//                                            .error("You must enter cuid ")
+//                                            .correctValue(String.valueOf(cuid))
+//                                            .location("Row : " + (row.getRowNum() + 1))
+//                                            .build());
                                 }
+                            } else {
+
+//                                System.out.println("contain cuid");
+                                farmerListFinal = fFinals.stream()
+                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
+                                        .findAny()
+                                        .orElse(null);
+
+                                if (farmerListFinal == null) {
+                                    int finalCuid = cuid;
+                                    farmerListFinal = fFinals.stream()
+                                            .filter( f -> f.getCufarmerID() == finalCuid)
+                                            .findAny().orElse(null);
+                                    if (farmerListFinal != null){
+                                        System.out.println("found invalid farmer code for cuid "+cuid);
+                                        farmerCode = farmerList.getFarCodeEUJAS();
+                                    }else{
+                                        farmerList.setIsNew(1);
+                                        if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                            cuid = farmerCodeVsCuid.get(farmerCode);
+                                        } else {
+                                            cuid = farmerListFinalService.createCuid();
+                                            farmerCodeVsCuid.put(farmerCode, cuid);
+                                        }
+                                    }
+
+//                                    farmerList.setIsNew(1);
+                                } else {
+//                                    System.out.println("contain cuid-existing farmer");
+                                    if (cuid != farmerListFinal.getCufarmerID()) {
+//                                        System.out.println("contain cuid-existing farmer-wrong cuid");
+//                                    cuid not matched send error message to user
+                                        errorList.add(ExcelErrorResponse.builder()
+                                                .error("cuid not matched")
+                                                .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
+                                                .location("Row : " + (row.getRowNum() + 1))
+                                                .build());
+                                        cuid = farmerListFinal.getCufarmerID();
+
+                                    }else{
+                                        cuid = farmerListFinal.getCufarmerID();
+                                        farmerList.setIsNew(0);
+                                    }
+                                }
+
                             }
+
+//                            farmerListFinal = fFinals.stream()
+//                                    .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
+//                                    .findAny()
+//                                    .orElse(null);
+//                            if (farmerListFinal != null){
+//                                cuid = farmerListFinal.getCufarmerID();
+//                                farmerList.setIsNew(0);
+//                            }else{
+//                                farmerList.setIsNew(1);
+//                                if (farmerCodeVsCuid.containsKey(farmerCode)) {
+//                                    cuid = farmerCodeVsCuid.get(farmerCode);
+//                                } else {
+//                                    cuid = farmerListFinalService.createCuid();
+//                                    farmerCodeVsCuid.put(farmerCode, cuid);
+//                                }
+//                            }
                         } catch (NullPointerException e) {
                             log.error("null pointer occurred " + e.getMessage());
                             e.printStackTrace();
