@@ -12,6 +12,6 @@ import java.util.Optional;
 @Repository
 public interface FarmerlistRepository extends CrudRepository<FarmerList, FarmerListID> {
 
-    Optional<List<FarmerList>> findFarmerListByProIDAndAuditID(int proId, int auditId);
+//    Optional<List<FarmerList>> findAllByProIDAndAuditID(int proId, int auditId);
     Optional<ArrayList<FarmerList>> findAllByProIDAndAuditID(int proId, int auditId);
 }

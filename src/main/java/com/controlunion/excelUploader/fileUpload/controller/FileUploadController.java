@@ -32,22 +32,22 @@ public class FileUploadController {
 //                System.out.println()
 //        );
 
-        fileServiceNewTest.uploadExcelFile(file,
+        ResponseEntity responseEntity = fileServiceNewTest.uploadExcelFile(file,
                 Integer.parseInt(projectId),
                 Integer.parseInt(auditId),
                 projectName, Integer.parseInt(proId));
-        UpoadProgressDto response = new UpoadProgressDto();
-        response.setContentLength(100);
-        response.setBytesRead(100);
-        response.setDone(true);
+//        UpoadProgressDto response = new UpoadProgressDto();
+//        response.setContentLength(100);
+//        response.setBytesRead(100);
+//        response.setDone(true);
 //        response.setMessage("File uploaded: " + file.getOriginalFilename());
-        messagingTemplate.convertAndSend("/topic/upload-progress", response);
+//        messagingTemplate.convertAndSend("/topic/upload-progress", response);
 
 //        return fileServiceNewTest.uploadExcelFile(file,
 //                Integer.parseInt(projectId),
 //                Integer.parseInt(auditId),
 //                projectName, Integer.parseInt(proId));
 
-        return ResponseEntity.ok("File uploaded successfully!");
+        return responseEntity;
     }
 }

@@ -110,13 +110,16 @@ public class FileServiceNewTest {
             validateAuditHeaders(sheet, errorList, projectId, projectName);
 //            log.info(className + ".readFile : returned row number " + rowNumber);
 //            log.error(className + ".readFile : Audit headers errors " + errorList);
+
             final Iterator<Row> iterator = sheet.rowIterator();
             Map<Integer, Crop> cropMapping = new LinkedHashMap<>();
             sendProgressUpdate(10, "Validating headers");
             Row row = findTableStart(iterator, errorList, rowNumber + 1);
+
 //            log.info(className + ".readFile : returned row number " + rowNumber);
 //            log.error(className + ".readFile : until table start errors " + errorList);
 //            log.info(className + ".readFile : table start point : " + rowNumber);
+
             assert row != null;
             System.out.println("start validating headers - 1");
             FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
@@ -128,18 +131,26 @@ public class FileServiceNewTest {
             System.out.println("end validating headers - 2");
 
             iterator.next();
-            long lastCertifiedAuditId = planService.getLastCertifiedPlanForProId(proId).getPlanID();
-            List<FarmerListFinal> fFinals = farmerListFinalService
-                    .getAllFarmerListByProjectIdAndAuditId(proId, (int) lastCertifiedAuditId);
+            long lastCertifiedAuditId = planService.getLastCertifiedPlanForProId(auditId, proId).getPlanID();
 
-            System.out.println("Read audit data start");
+            List<FarmerListFinal> fFinals = farmerListFinalService
+                    .getBeforeCertifiedFarmLIstFinal(proId, auditId);
+//            if (fFinals == null){
+//
+//            }
+
+
+//            System.out.println("Read audit data start "+fFinals.get(0).getAuditID());
+//            System.out.println("Read audit data start "+fFinals.get(0).getProID());
             sendProgressUpdate(15, "Start Reading data");
             FarmerListComparisonDto farmerListComparisonDto = readAuditData(iterator,
                     cropMapping,
                     errorList,
                     evaluator,
                     auditId,
-                    proId, lastCertifiedAuditId, fFinals);
+                    proId,
+                    lastCertifiedAuditId,
+                    fFinals);
             System.out.println("Read audit data done");
             workbook.close();
 //            System.out.println("Is errorlist empty : " + errorList.size());
@@ -302,73 +313,98 @@ public class FileServiceNewTest {
                         FarmerListFinal farmerListFinal;
                         String finalPlotCode = convertCellValueToStringValue(row.getCell(7), errorList);
                         try {
-                            if (row.getCell(0) == null || convertCellValueToStringValue(cell, errorList).trim().equals("")) {
-//                                System.out.println("empty cuid");
-                                farmerListFinal = fFinals.stream()
-                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
-                                        .findAny()
-                                        .orElse(null);
-//                                System.out.println(farmerListFinal.getFarmerName());
-                                if (farmerListFinal == null) {
-//                                    System.out.println("empty cuid-new farmer");
-                                    farmerList.setIsNew(1);
-//                                    new user
-                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
-                                        cuid = farmerCodeVsCuid.get(farmerCode);
-                                    } else {
-                                        cuid = farmerListFinalService.createCuid();
-                                        farmerCodeVsCuid.put(farmerCode, cuid);
-                                    }
-                                    newUser++;
-                                } else {
-//                                    System.out.println("empty cuid-existing farmer");
-//                                    existing farmer send error message to user enter cuid
-                                    cuid = farmerListFinal.getCufarmerID();
-                                    farmerList.setListid(0);
-//                                    errorList.add(ExcelErrorResponse.builder()
-//                                            .error("You must enter cuid ")
-//                                            .correctValue(String.valueOf(cuid))
-//                                            .location("Row : " + (row.getRowNum() + 1))
-//                                            .build());
-                                }
-                            } else {
-//                                System.out.println("contain cuid");
-                                farmerListFinal = fFinals.stream()
-                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
-                                        .findAny()
-                                        .orElse(null);
-                                if (farmerListFinal == null) {
-//                                    System.out.println("contain cuid-new farmer");
-//                                    errorList.add(ExcelErrorResponse.builder()
-//                                            .error("farmer not exist. remove cuid")
-//                                            .location("Row : " + (row.getRowNum() + 1))
-//                                            .build());
-                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
-                                        cuid = farmerCodeVsCuid.get(farmerCode);
-                                    } else {
-                                        cuid = farmerListFinalService.createCuid();
-                                        farmerCodeVsCuid.put(farmerCode, cuid);
-                                    }
-                                    farmerList.setIsNew(1);
-                                } else {
-//                                    System.out.println("contain cuid-existing farmer");
-                                    if (cuid != farmerListFinal.getCufarmerID()) {
-//                                        System.out.println("contain cuid-existing farmer-wrong cuid");
-//                                    cuid not matched send error message to user
-//                                        errorList.add(ExcelErrorResponse.builder()
-//                                                .error("cuid not matched")
-//                                                .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
-//                                                .location("Row : " + (row.getRowNum() + 1))
-//                                                .build());
-//                                        cuid = farmerListFinal.getCufarmerID();
-                                    }
+//                            if (row.getCell(0) == null || convertCellValueToStringValue(cell, errorList).trim().equals("")) {
+////                                System.out.println("empty cuid");
+//                                farmerListFinal = fFinals.stream()
+//                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
+//                                        .findAny()
+//                                        .orElse(null);
+////                                System.out.println(farmerListFinal.getFarmerName());
+//                                if (farmerListFinal == null) {
+////                                    System.out.println("empty cuid-new farmer");
+//                                    farmerList.setIsNew(1);
+////                                    new user
+//                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
+//                                        cuid = farmerCodeVsCuid.get(farmerCode);
+//                                    } else {
+//                                        cuid = farmerListFinalService.createCuid();
+//                                        farmerCodeVsCuid.put(farmerCode, cuid);
+//                                    }
+//                                    newUser++;
+//                                } else {
+////                                    System.out.println("empty cuid-existing farmer");
+////                                    existing farmer send error message to user enter cuid
+//                                    cuid = farmerListFinal.getCufarmerID();
+//                                    farmerList.setListid(0);
+////                                    errorList.add(ExcelErrorResponse.builder()
+////                                            .error("You must enter cuid ")
+////                                            .correctValue(String.valueOf(cuid))
+////                                            .location("Row : " + (row.getRowNum() + 1))
+////                                            .build());
+//                                }
+//                            } else {
+//
+////                                System.out.println("contain cuid");
+//                                farmerListFinal = fFinals.stream()
+//                                        .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
+//                                        .findAny()
+//                                        .orElse(null);
+//
+//                                if (farmerListFinal == null) {
+//                                    int finalCuid = cuid;
+//                                    farmerListFinal = fFinals.stream()
+//                                            .filter( f -> f.getCufarmerID() == finalCuid)
+//                                            .findAny().orElse(null);
+//                                    if (farmerListFinal != null){
+//                                        System.out.println("found invalid farmer code for cuid "+cuid);
+//                                        farmerCode = farmerList.getFarCodeEUJAS();
+//                                    }else{
+//                                        farmerList.setIsNew(1);
+//                                        if (farmerCodeVsCuid.containsKey(farmerCode)) {
+//                                            cuid = farmerCodeVsCuid.get(farmerCode);
+//                                        } else {
+//                                            cuid = farmerListFinalService.createCuid();
+//                                            farmerCodeVsCuid.put(farmerCode, cuid);
+//                                        }
+//                                    }
+//
+////                                    farmerList.setIsNew(1);
+//                                } else {
+////                                    System.out.println("contain cuid-existing farmer");
+//                                    if (cuid != farmerListFinal.getCufarmerID()) {
+////                                        System.out.println("contain cuid-existing farmer-wrong cuid");
+////                                    cuid not matched send error message to user
+////                                        errorList.add(ExcelErrorResponse.builder()
+////                                                .error("cuid not matched")
+////                                                .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
+////                                                .location("Row : " + (row.getRowNum() + 1))
+////                                                .build());
+////                                        cuid = farmerListFinal.getCufarmerID();
+//
+//                                    }
+//
+//                                    cuid = farmerListFinal.getCufarmerID();
+//                                    farmerList.setIsNew(0);
+//                                }
+//
+//                            }
 
-                                    cuid = farmerListFinal.getCufarmerID();
-                                    farmerList.setIsNew(0);
+                            farmerListFinal = fFinals.stream()
+                                    .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
+                                    .findAny()
+                                    .orElse(null);
+                            if (farmerListFinal != null){
+                                cuid = farmerListFinal.getCufarmerID();
+                                farmerList.setIsNew(0);
+                            }else{
+                                farmerList.setIsNew(1);
+                                if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                    cuid = farmerCodeVsCuid.get(farmerCode);
+                                } else {
+                                    cuid = farmerListFinalService.createCuid();
+                                    farmerCodeVsCuid.put(farmerCode, cuid);
                                 }
-
                             }
-
                         } catch (NullPointerException e) {
                             log.error("null pointer occurred " + e.getMessage());
                             e.printStackTrace();

@@ -6,4 +6,5 @@ import lombok.Data;
 public class PlanDto {
     private Long planId;
     private String auditNo;
+    private boolean certified;
 }

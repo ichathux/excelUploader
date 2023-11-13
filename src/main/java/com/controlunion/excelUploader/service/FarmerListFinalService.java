@@ -1,14 +1,22 @@
 package com.controlunion.excelUploader.service;
 
+import com.controlunion.excelUploader.mapper.FarmerlistCropMapper;
+import com.controlunion.excelUploader.mapper.FarmerlistFinalMapper;
+import com.controlunion.excelUploader.mapper.FarmerlistMapper;
+import com.controlunion.excelUploader.model.FarmerList;
+import com.controlunion.excelUploader.model.FarmerListCrop;
+import com.controlunion.excelUploader.model.FarmerListCropFinal;
 import com.controlunion.excelUploader.model.FarmerListFinal;
 import com.controlunion.excelUploader.repository.FarmerListFinalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -83,11 +91,38 @@ public class FarmerListFinalService {
         return farmerListFinalRepository.findAllByProIDAndAuditID(proId, auditId).orElse(null);
     }
 
-    public void deleteFarmerListFinals(Collection<FarmerListFinal> values) {
+
+    public void deleteFarmerListFinals(List<FarmerListFinal> values) {
         try {
             farmerListFinalRepository.deleteAll(values);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
+
+    public List<FarmerListFinal> saveToFarmerListOnFarmerListFinal(List<FarmerList> farmerLists){
+        ArrayList<FarmerListFinal> farmerListFinals = new ArrayList<>();
+        for (FarmerList farmerList : farmerLists){
+            FarmerListFinal farmerListFinal = FarmerlistMapper.INSTANCE.farmerListToFarmerListFinal(farmerList);
+            List<FarmerListCrop> farmerListCrops = farmerList.getFarmerListCropList();
+            List<FarmerListCropFinal> farmerListFinalCrops = farmerListCrops.stream()
+                    .map(fc -> {
+                        FarmerListCropFinal fcf = FarmerlistCropMapper.INSTANCE.farmerListCropToFarmerLIstCropFinal(fc);
+                        fcf.setFarmerListFinal(farmerListFinal);
+                        return fcf;
+                    })
+                    .collect(Collectors.toList());
+//            System.out.println(farmerListFinalCrops);
+
+            farmerListFinal.setFarmerListCropFinalList(farmerListFinalCrops);
+            farmerListFinals.add(farmerListFinal);
+        }
+        return farmerListFinalRepository.saveAll(farmerListFinals);
+    }
+
+    public List<FarmerListFinal> getBeforeCertifiedFarmLIstFinal(int proId, int auditId){
+        return farmerListFinalRepository.findAllByProIDAndAuditIDIsLessThanOrderByListid(proId, auditId).orElse(new ArrayList<>());
+    }
+
+
 }

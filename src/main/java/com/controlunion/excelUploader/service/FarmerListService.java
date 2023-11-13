@@ -1,11 +1,10 @@
 package com.controlunion.excelUploader.service;
 
-import com.controlunion.excelUploader.model.FarmerList;
-import com.controlunion.excelUploader.model.FarmerListCrop;
-import com.controlunion.excelUploader.repository.FarmerListCropRepository;
+import com.controlunion.excelUploader.model.*;
 import com.controlunion.excelUploader.repository.FarmerlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.sl.draw.geom.GuideIf;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +19,8 @@ import java.util.stream.Collectors;
 public class FarmerListService {
 
     private final FarmerlistRepository farmerlistRepository;
+    private final FarmerListFinalService farmerListFinalService;
+//    private final PlanService planService;
 
     @Transactional
     public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) {
@@ -28,7 +28,7 @@ public class FarmerListService {
         try {
             ArrayList<FarmerList> list = new ArrayList<>();
             ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
-            System.out.println("alraedy conatin "+farmerListsExist.size());
+            System.out.println("alraedy conatin " + farmerListsExist.size());
             if (!farmerListsExist.isEmpty()) {
                 for (FarmerList farmerList : farmerLists) {
                     FarmerList fl = farmerListsExist.stream()
@@ -50,17 +50,17 @@ public class FarmerListService {
 
                             if (fc != null) {
                                 fc.setId(c.getId());
-                            }else{
+                            } else {
                                 System.out.println(farmerList);
-                                System.out.println("Null crops "+c.getCropID()+" "+farmerList.getCufarmerID());
+                                System.out.println("Null crops " + c.getCropID() + " " + farmerList.getCufarmerID());
                             }
                             farmerListCropsnew.add(fc);
                         }
 
                         farmerList.setFarmerListCropList(farmerListCropsnew);
 
-                    }else{
-                        System.out.println("no element found for "+farmerList.getCufarmerID()+" "+farmerList.getPlotCode());
+                    } else {
+                        System.out.println("no element found for " + farmerList.getCufarmerID() + " " + farmerList.getPlotCode());
                     }
 
                     list.add(farmerList);
@@ -89,7 +89,7 @@ public class FarmerListService {
 //        System.out.println("already contained data-1");
         farmerList.setListid(fl.getListid());
         farmerlistRepository.delete(fl);
-        farmerlistRepository.findFarmerListByProIDAndAuditID(farmerList.getProID(), farmerList.getAuditID()).isPresent();
+        farmerlistRepository.findAllByProIDAndAuditID(farmerList.getProID(), farmerList.getAuditID()).isPresent();
 //        System.out.println("deleted-1");
     }
 
@@ -114,22 +114,47 @@ public class FarmerListService {
                 farmerLists1.add(fl);
             }
         }
+    }
 
-//        farmerlistRepository.deleteAll(farmerLists1);
+    public List getFarmListForProIdAndAuditId(int proId, int auditId) {
+        System.out.println("getting farmerlist for " + proId + " " + auditId);
+        Optional<ArrayList<FarmerList>> farmerList = farmerlistRepository.findAllByProIDAndAuditID(proId, auditId);
+        if (farmerList.isPresent()){
+            return farmerList.get();
+        }else{
+            List<FarmerListFinal> farmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(proId, auditId);
+            if (farmerListFinals != null){
+                return farmerListFinals;
+            }else {
+                return new ArrayList();
+            }
 
-//        if (!checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId).isEmpty()){
-//            removeDuplicateData(checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId),
-//                    farmerLists,
-//                    proId,
-//                    auditId);
-//        }
+        }
+//        return farmerList.orElseGet(ArrayList::new);
+        //        return farmerList.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
+    }
+    public List<FarmerList> getFarmListForProIdAndAuditId2(int proId, int auditId) {
+        System.out.println("getting farmerlist for " + proId + " " + auditId);
+        Optional<ArrayList<FarmerList>> farmerList = farmerlistRepository.findAllByProIDAndAuditID(proId, auditId);
+        return farmerList.orElseGet(ArrayList::new);
+        //        return farmerList.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
     }
 
 
-    public ResponseEntity<List<FarmerList>> getFarmListForProIdAndAuditId(int proId, int auditId) {
-        Optional<List<FarmerList>> farmerList = farmerlistRepository.findFarmerListByProIDAndAuditID(proId, auditId);
-        return farmerList.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
+    public void deleteFromFarmerList(List<FarmerList> farmerLists) {
+        try {
+            farmerlistRepository.deleteAll(farmerLists);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-
+    public void moveFarmerListTofarmerListFinal(){
+        try {
+//            deleteFarmerListFinals();
+//            saveToFarmerListFinal();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 
 }

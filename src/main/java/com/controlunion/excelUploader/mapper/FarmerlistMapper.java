@@ -1,5 +1,6 @@
 package com.controlunion.excelUploader.mapper;
 
+import com.controlunion.excelUploader.model.FarmerList;
 import com.controlunion.excelUploader.model.FarmerListFinal;
 import com.controlunion.excelUploader.model.FarmerList_deleted;
 import org.mapstruct.Mapper;
@@ -7,9 +8,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 @Mapper
-public interface FarmerlistFinalMapper {
+public interface FarmerlistMapper {
 
-    FarmerlistFinalMapper INSTANCE = Mappers.getMapper(FarmerlistFinalMapper.class);
+    FarmerlistMapper INSTANCE = Mappers.getMapper(FarmerlistMapper.class);
     @Mapping(source = "listid", target = "listid")
     @Mapping(source = "proID", target = "proID")
     @Mapping(source = "auditID", target = "auditID")
@@ -39,6 +40,5 @@ public interface FarmerlistFinalMapper {
     @Mapping(source = "usda_harvest", target = "usda_harvest")
     @Mapping(source = "farmName", target = "farmName")
     @Mapping(source = "plotCode", target = "plotCode")
-//    @Mapping(source = "farmerListCropList", target = "farmerListCropList")
-    FarmerList_deleted farmerListFinalToFarmerListDeleted(FarmerListFinal farmerListFinal);
+    FarmerListFinal farmerListToFarmerListFinal(FarmerList farmerList);
 }

@@ -14,7 +14,8 @@ public interface PlanMapper {
 
     @Mappings({
             @Mapping(source = "planID", target = "planId"),
-            @Mapping(source = "auditNo", target = "auditNo")
+            @Mapping(source = "auditNo", target = "auditNo"),
+            @Mapping(source = "certified", target = "certified")
     })
     PlanDto planToPlanDto(Plan plan);
 }
