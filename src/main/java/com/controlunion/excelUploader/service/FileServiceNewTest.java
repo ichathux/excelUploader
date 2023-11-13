@@ -6,6 +6,13 @@ import com.controlunion.excelUploader.dto.ExcelErrorResponse;
 import com.controlunion.excelUploader.dto.FarmerListComparisonDto;
 import com.controlunion.excelUploader.dto.FarmerListMandatoryFieldsDto;
 import com.controlunion.excelUploader.enums.Errors;
+//import com.controlunion.excelUploader.fileUpload.dto.ProgressMessage;
+import com.controlunion.excelUploader.fileUpload.dto.ProgressMessage;
+import com.controlunion.excelUploader.fileUpload.dto.UpoadProgressDto;
+import com.controlunion.excelUploader.fileUpload.dto.WebSocketResponse;
+import com.controlunion.excelUploader.fileUpload.testNew.Greeting;
+import com.controlunion.excelUploader.fileUpload.testNew.GreetingController;
+import com.controlunion.excelUploader.fileUpload.testNew.HelloMessage;
 import com.controlunion.excelUploader.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +25,11 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,6 +56,10 @@ public class FileServiceNewTest {
     private final FarmerListDeletedService farmerListDeletedService;
     private long startTime;
     private long endTime;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
 
     public ResponseEntity uploadExcelFile(MultipartFile file,
                                           int projectId,
@@ -91,11 +105,14 @@ public class FileServiceNewTest {
             XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
             XSSFSheet sheet = workbook.getSheetAt(0); // Assuming the data is on the first sheet
             int rowNumber = 0;
+            sendProgressUpdate(5, "Validating sheet");
+
             validateAuditHeaders(sheet, errorList, projectId, projectName);
 //            log.info(className + ".readFile : returned row number " + rowNumber);
 //            log.error(className + ".readFile : Audit headers errors " + errorList);
             final Iterator<Row> iterator = sheet.rowIterator();
             Map<Integer, Crop> cropMapping = new LinkedHashMap<>();
+            sendProgressUpdate(10, "Validating headers");
             Row row = findTableStart(iterator, errorList, rowNumber + 1);
 //            log.info(className + ".readFile : returned row number " + rowNumber);
 //            log.error(className + ".readFile : until table start errors " + errorList);
@@ -116,6 +133,7 @@ public class FileServiceNewTest {
                     .getAllFarmerListByProjectIdAndAuditId(proId, (int) lastCertifiedAuditId);
 
             System.out.println("Read audit data start");
+            sendProgressUpdate(15, "Start Reading data");
             FarmerListComparisonDto farmerListComparisonDto = readAuditData(iterator,
                     cropMapping,
                     errorList,
@@ -127,10 +145,12 @@ public class FileServiceNewTest {
 //            System.out.println("Is errorlist empty : " + errorList.size());
             if (errorList.isEmpty()) {
                 try {
+                    sendProgressUpdate(45, "Comparing Reading data");
                     farmerLists = makeComparison(farmerListComparisonDto, fFinals, auditId);
                     endTime = System.currentTimeMillis();
                     log.info("task end : " + (endTime - startTime) + "ms");
 //                    System.out.println("new user count " + newUser);
+                    sendProgressUpdate(75, "Saving data");
                     farmerListService.saveFarmerList(proId, auditId, farmerLists);
 
                     return ResponseEntity.ok().build();
@@ -1089,6 +1109,7 @@ public class FileServiceNewTest {
                             .errorValue(convertCellValueToStringValue(cell, errorList))
                             .correctValue(projectName)
                             .build());
+
                     log.error(Errors.PROJECT_NAME_MISMATCH.getName() + "cell " + cell.getAddress());
                 } else {
                     System.out.println("project name matched");
@@ -1564,6 +1585,17 @@ public class FileServiceNewTest {
             return 0;
         }
 
+
+    }
+
+    private void sendProgressUpdate(int read, String message) {
+
+        UpoadProgressDto upoadProgressDto = new UpoadProgressDto();
+        upoadProgressDto.setDone(false);
+        upoadProgressDto.setBytesRead(read);
+        upoadProgressDto.setContentLength(100);
+
+        messagingTemplate.convertAndSend("/topic/upload-progress", upoadProgressDto);
 
     }
 

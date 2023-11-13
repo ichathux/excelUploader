@@ -31,8 +31,13 @@ public class FileController {
                                       @RequestParam("audit") String auditId,
                                       @RequestParam("proId") String proId){
         System.out.println(file.getOriginalFilename());
-        System.out.println(projectId);
+
         System.out.println(auditId);
+
+        System.out.println(projectId);
+        System.out.println(projectName);
+        System.out.println(proId);
+
         return fileService.uploadExcelFile(file,
                 Integer.parseInt(projectId),
                 Integer.parseInt(auditId),

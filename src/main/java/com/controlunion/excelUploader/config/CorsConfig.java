@@ -27,7 +27,7 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         List<String> domainList = new ArrayList<>();
-        domainList.add("http://localhost");
+//        domainList.add("http://localhost");
         domainList.add("http://localhost:4200");
         config.setAllowedOrigins(domainList);// use docker
         config.setAllowedHeaders(Arrays.asList(
@@ -41,6 +41,7 @@ public class CorsConfig {
                 HttpMethod.DELETE.name()));
         config.setMaxAge(MAX_AGE);
         source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/ws/**", config);
         FilterRegistrationBean bean = new FilterRegistrationBean(new CorsFilter(source));
 
         // should be set order to -100 because we need to CorsFilter before SpringSecurityFilter
