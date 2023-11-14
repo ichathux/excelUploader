@@ -16,4 +16,10 @@ public interface CropRepository extends JpaRepository<Crop, Long> {
     @Cacheable(value = "crops")
     @QueryHints(@QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Optional<Crop> findTopByCropName(String cropName);
+
+    @Cacheable(value = "crops")
+    @QueryHints(@QueryHint(name = "org.hibernate.readOnly", value = "true"))
+    Optional<Crop> findByCropID(int cropID);
+
+
 }

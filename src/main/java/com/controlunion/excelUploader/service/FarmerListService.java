@@ -18,32 +18,26 @@ import java.util.Optional;
 @Slf4j
 public class FarmerListService {
 
-    @Autowired
-    private FarmerlistRepository repository;
-
+    private final FarmerlistRepository repository;
     private final FarmerListFinalService farmerListFinalService;
-    private final JDBCBatchInsertService jdbcBatchInsertService;
 
     @Transactional
     public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) {
+
         log.info("Start saving on db ");
         ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
+
         if (farmerListsExist.isEmpty()) {
             repository.saveAll(farmerLists);
         } else {
-            System.out.println("deleted old farmer lists");
+            log.info("deleted old farmer lists");
             repository.deleteAllByProIDAndAuditID(proId, auditId);
             repository.flush();
-            System.out.println("save new farmer lists");
+            log.info("save new farmer lists");
             repository.saveAll(farmerLists);
-
-//            jdbcBatchInsertService.batchInsert(proId, auditId, list);
-
         }
-
         return ResponseEntity.badRequest().build();
     }
-
 
     private ArrayList<FarmerList> checkFarmerListAlreadyExistForproidAndAuditID(int proId, int auditId) {
         try {
@@ -72,7 +66,6 @@ public class FarmerListService {
             e.printStackTrace();
             return null;
         }
-
     }
 
     public ArrayList<FarmerList> getFarmListForProIdAndAuditId2(int proId, int auditId) {
@@ -83,15 +76,6 @@ public class FarmerListService {
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
-        }
-    }
-
-    public void deleteFromFarmerList(ArrayList<FarmerList> farmerLists) {
-        try {
-            repository.deleteAll(farmerLists);
-            System.out.println("deleted");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

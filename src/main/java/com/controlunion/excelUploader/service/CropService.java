@@ -25,6 +25,9 @@ public class CropService {
            log.error(this.getClass().getName()+".getCropByName: getting crop " + name + " on db" + e.getMessage());
            return null;
         }
+    }
 
+    public Crop getCropNameById(int id){
+        return cropRepository.findByCropID(id).orElse(null);
     }
 }
