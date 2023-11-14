@@ -61,6 +61,24 @@ public class FarmerListFinalService {
         }
     }
 
+//    public List<FarmerListFinal> getAllFarmerListByProjectId(int proId) {
+//        try {
+//            return farmerListFinalRepository.findAllByProID(proId).orElse(new ArrayList<>());
+//        }catch (Exception e){
+//            e.printStackTrace();
+//            return new ArrayList<>();
+//        }
+//    }
+
+    public List<FarmerListFinal> getAllFarmerListByProjectId(int proId) {
+        try {
+            return farmerListFinalRepository.findAllByProID(proId).orElse(new ArrayList<>());
+        }catch (Exception e){
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
 
     public void deleteFarmerListFinals(List<FarmerListFinal> values) {
         try {

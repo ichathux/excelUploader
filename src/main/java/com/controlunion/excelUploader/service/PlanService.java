@@ -98,9 +98,11 @@ public class PlanService {
                     plan.getProID().getId().intValue(),
                     plan.getPlanID().intValue());
 
-            List<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
-                    plan.getProID().getId().intValue(),
-                    plan.getPlanID().intValue());
+//            List<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
+//                    plan.getProID().getId().intValue(),
+//                    plan.getPlanID().intValue());
+            List<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectId(
+                    plan.getProID().getId().intValue());
 
             if (farmerListsFarmerListFinals.isEmpty()){
                 System.out.println("no prev finals");
@@ -113,12 +115,11 @@ public class PlanService {
                 farmerListFinalCropsService.deleteFarmerListCropFinalByFarmerListFinal(farmerListsFarmerListFinals);
                 System.out.println("deleting prev farmerlist final");
                 farmerListFinalService.deleteFarmerListFinals(farmerListsFarmerListFinals);
-                System.out.println("deleting prev farmerlist");
-                farmerListService.deleteFromFarmerList(farmerLists);
+//                System.out.println("deleting prev farmerlist");
+//                farmerListService.deleteFromFarmerList(farmerLists);
                 System.out.println("getting new farmerlist");
-                farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
-                        plan.getProID().getId().intValue(),
-                        plan.getPlanID().intValue());
+                farmerListFinalService.getAllFarmerListByProjectId(
+                        plan.getProID().getId().intValue());
                 System.out.println("save farmerlist final new");
                 farmerListFinalService.saveToFarmerListFinal(farmerLists);
                 System.out.println("save plan");

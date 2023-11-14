@@ -350,6 +350,7 @@ public class FileServiceNewTest {
                                             System.out.println("found invalid farmer code for cuid "+cuid);
                                             farmerCode = farmerList.getFarCodeEUJAS();
                                         }else{
+
                                             farmerList.setIsNew(1);
                                             if (farmerCodeVsCuid.containsKey(farmerCode)) {
                                                 cuid = farmerCodeVsCuid.get(farmerCode);
@@ -375,12 +376,13 @@ public class FileServiceNewTest {
                                         }
                                     }
                                 }else {
-                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
-                                        cuid = farmerCodeVsCuid.get(farmerCode);
-                                    } else {
-                                        cuid = farmerListFinalService.createCuid();
-                                        farmerCodeVsCuid.put(farmerCode, cuid);
-                                    }
+//                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
+//                                        cuid = farmerCodeVsCuid.get(farmerCode);
+//                                    } else {
+//                                        cuid = farmerListFinalService.createCuid();
+//                                        farmerCodeVsCuid.put(farmerCode, cuid);
+//                                    }
+
                                     farmerList.setIsNew(1);
                                 }
                             }
@@ -675,7 +677,6 @@ public class FileServiceNewTest {
                     case 22:
                         try {
                             farmerList.setUsda_harvest(convertCellValueToStringValue(cell, errorList));
-
                         } catch (IllegalStateException e) {
                             errorList.add(ExcelErrorResponse.builder()
                                     .location("Cell:" + cell.getAddress())
@@ -686,6 +687,9 @@ public class FileServiceNewTest {
                         break;
 //                    reading crop section
                     default:
+//                        if (cuid == 585653300){
+//                            System.out.println("Start reading crops details");
+//                        }
                         try {
                             readingCropsData(cropMapping, errorList, cuid, plotCode, row, farmerList, farmerListCropList, cell);
                         } catch (IllegalStateException e) {
@@ -694,6 +698,10 @@ public class FileServiceNewTest {
                                     .error("Invalid input type")
                                     .build());
                         }
+//                        if (cuid == 585653300){
+//                            System.out.println("end reading crops details");
+//                            System.out.println(farmerList.getFarmerListCropList());
+//                        }
 
                         break;
                 }
@@ -730,6 +738,11 @@ public class FileServiceNewTest {
         int i;
         try {
             if (cropMapping.containsKey(cell.getColumnIndex())) {
+//                if (cuid == 585653300){
+//                    System.out.println("getting farmerlistcrops for "+cuid);
+//                    System.out.println("contain "+cell.getColumnIndex());
+//                    System.out.println("crop "+cropMapping.containsKey(cell.getColumnIndex()));
+//                }
 //                System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++reading : " + cropMapping.get(cell.getColumnIndex()).getCropName());
 
                 Crop crop = cropMapping.get(cell.getColumnIndex());
@@ -769,7 +782,9 @@ public class FileServiceNewTest {
                                 break;
                             case 3:
                                 try {
+
                                     farmerListCrop.setNoOfSesons(convertCellValueToNumberValue(row.getCell(currentCellStart + i), errorList));
+
                                 } catch (NullPointerException e) {
                                     farmerListCrop.setNoOfSesons(0);
                                 }
@@ -786,7 +801,17 @@ public class FileServiceNewTest {
                         e.printStackTrace();
                     }
                 }
+//                if (cuid == 585653300){
+//                    System.out.println("getting farmerlistcrops listed for "+cuid);
+//                    System.out.println(farmerListCrop);
+//                }
                 farmerListCropList.add(farmerListCrop);
+            }else{
+//                if (cuid == 585653300){
+//                    System.out.println("else");
+//                    System.out.println("Start reading crops details else"+cell.getColumnIndex());
+//                    System.out.println(cropMapping);
+//                }
             }
         } catch (IllegalStateException e) {
             log.error("Cell:" + cell.getAddress() + " : " + e.getMessage());
@@ -1298,6 +1323,7 @@ public class FileServiceNewTest {
         while (cellIterator.hasNext()) {
 //            log.info("iterating in header 2");
             Cell cell = cellIterator.next();
+            System.out.println("valadating headers "+cell.getStringCellValue());
             if (cell.getCellType() == CellType.FORMULA) {
                 cell = isFormulaProceed(cell, evaluator);
             }
@@ -1343,8 +1369,9 @@ public class FileServiceNewTest {
             cells.add(cellIterator.next());
         }
 
-        for (int i = 0; i < cells.size(); i += excelFileProperties.getHeader3().size()) {
+        for (int i = 0; i < cells.size(); i ++) {
             Cell cell = cells.get(i);
+//            System.out.println("validating crop "+cell.getStringCellValue());
             if (cell.getCellType() == CellType.FORMULA) {
                 cell = isFormulaProceed(cell, evaluator);
             }

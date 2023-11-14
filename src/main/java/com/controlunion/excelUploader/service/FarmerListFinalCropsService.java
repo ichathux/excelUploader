@@ -36,4 +36,7 @@ public class FarmerListFinalCropsService {
             e.printStackTrace();
         }
     }
+    public void deletedFarmerListFinalsForGivenProId(int proId){
+//        repository.deleteAllByFarmerListFinal();
+    }
 }
