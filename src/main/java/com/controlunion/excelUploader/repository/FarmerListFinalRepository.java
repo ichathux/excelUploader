@@ -5,10 +5,12 @@ import com.controlunion.excelUploader.model.FarmerListFinal;
 import com.controlunion.excelUploader.model.comp_keys.FarmerListFinalID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.QueryHint;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +22,10 @@ public interface FarmerListFinalRepository extends JpaRepository<FarmerListFinal
     Optional<List<FarmerListFinal>> findAllByCufarmerIDAndProID(int cuFarmerId, int proId);
     Optional<List<FarmerListFinal>> findAllByProIDAndAuditID(int proId, int auditId);
     Optional<List<FarmerListFinal>> findAllByProIDAndAuditIDIsLessThanOrderByListid(int proId, int auditId);
+
+    @QueryHints(@QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Optional<List<FarmerListFinal>> findAllByProID(int proId);
+
     void deleteAllByProID(int proId);
 //    int findTopCufarmerIDByFarCodeEUJAS(String farmerCode);
     Optional<Integer> findCufarmerIDByFarCodeEUJASAndProID(String farCodeEUJAS, int proId);

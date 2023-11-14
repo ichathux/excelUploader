@@ -376,13 +376,12 @@ public class FileServiceNewTest {
                                         }
                                     }
                                 }else {
-//                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
-//                                        cuid = farmerCodeVsCuid.get(farmerCode);
-//                                    } else {
-//                                        cuid = farmerListFinalService.createCuid();
-//                                        farmerCodeVsCuid.put(farmerCode, cuid);
-//                                    }
-
+                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                        cuid = farmerCodeVsCuid.get(farmerCode);
+                                    } else {
+                                        cuid = farmerListFinalService.createCuid();
+                                        farmerCodeVsCuid.put(farmerCode, cuid);
+                                    }
                                     farmerList.setIsNew(1);
                                 }
                             }
@@ -826,7 +825,7 @@ public class FileServiceNewTest {
     private ArrayList<FarmerList> makeComparison(FarmerListComparisonDto dto,
                                                  List<FarmerListFinal> farmerListFinals,
                                                  int auditID) {
-        log.info("start comparison with farmlist with farmlist_final");
+        log.info("start comparison with farmlist with farmlist_final "+farmerListFinals.size());
 
         ArrayList<FarmerList> farmerLists = new ArrayList<>();
 //        System.out.println(farmerListFinals.size() + " init found");
@@ -845,7 +844,7 @@ public class FileServiceNewTest {
             farmerLists.add(farmerList);
             farmerListFinals.remove(aFinal);
         }
-
+        System.out.println("comparison done "+farmerLists.size());
         if (!farmerListFinals.isEmpty()) {
             System.out.println(farmerListFinals.size() + " deleted");
             farmerListDeletedService.addDataToFarmListDeleted(farmerListFinals, auditID);
@@ -1371,15 +1370,15 @@ public class FileServiceNewTest {
 
         for (int i = 0; i < cells.size(); i ++) {
             Cell cell = cells.get(i);
-//            System.out.println("validating crop "+cell.getStringCellValue());
+            System.out.println("validating crop "+cell.getStringCellValue());
             if (cell.getCellType() == CellType.FORMULA) {
                 cell = isFormulaProceed(cell, evaluator);
             }
             if (cell.getCellType() == CellType.BLANK) {
-                errorList.add(ExcelErrorResponse.builder()
-                        .location("Cell " + cell.getAddress())
-                        .error(Errors.MANDATORY_CELL.getName())
-                        .build());
+//                errorList.add(ExcelErrorResponse.builder()
+//                        .location("Cell " + cell.getAddress())
+//                        .error(Errors.MANDATORY_CELL.getName())
+//                        .build());
                 continue;
             }
 
