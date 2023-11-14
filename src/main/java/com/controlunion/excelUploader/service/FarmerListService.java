@@ -4,8 +4,10 @@ import com.controlunion.excelUploader.model.*;
 import com.controlunion.excelUploader.repository.FarmerlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -16,7 +18,9 @@ import java.util.Optional;
 @Slf4j
 public class FarmerListService {
 
-    private final FarmerlistRepository repository;
+    @Autowired
+    private FarmerlistRepository repository;
+
     private final FarmerListFinalService farmerListFinalService;
     private final JDBCBatchInsertService jdbcBatchInsertService;
 
@@ -29,12 +33,10 @@ public class FarmerListService {
         } else {
             System.out.println("deleted old farmer lists");
             repository.deleteAllByProIDAndAuditID(proId, auditId);
-            System.out.println("get old list");
-            repository.findAllByProIDAndAuditID(proId, auditId);
-            System.out.println("sabe new farmerlist");
-            ArrayList<FarmerList> list = new ArrayList<>();
-            farmerLists.forEach(list::add);
-            repository.saveAll(list);
+            repository.flush();
+            System.out.println("save new farmer lists");
+            repository.saveAll(farmerLists);
+
 //            jdbcBatchInsertService.batchInsert(proId, auditId, list);
 
         }

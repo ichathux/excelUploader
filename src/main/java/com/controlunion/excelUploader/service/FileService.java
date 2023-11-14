@@ -1,10 +1,7 @@
 package com.controlunion.excelUploader.service;
 
 import com.controlunion.excelUploader.config.ExcelFilePropertiesConfig;
-import com.controlunion.excelUploader.dto.ChangesDto;
-import com.controlunion.excelUploader.dto.ExcelErrorResponse;
-import com.controlunion.excelUploader.dto.FarmerListComparisonDto;
-import com.controlunion.excelUploader.dto.FarmerListMandatoryFieldsDto;
+import com.controlunion.excelUploader.dto.*;
 import com.controlunion.excelUploader.enums.Errors;
 import com.controlunion.excelUploader.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class FileServiceNewTest {
+public class FileService {
 
     private final String className = this.getClass().getName();
     private final ExcelFilePropertiesConfig excelFileProperties;
@@ -846,7 +843,7 @@ public class FileServiceNewTest {
         return farmerLists;
     }
 
-    public String convertFarmDataChangesTo(ArrayList<ChangesDto> list) {
+    public String convertFarmDataChangesTo(ArrayList<FarmChangesDto> list) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.writeValueAsString(list);
@@ -889,72 +886,72 @@ public class FileServiceNewTest {
         }
         String plot = entry.getKey().split("plot")[1];
         ObjectMapper mapper = new ObjectMapper();
-        ArrayList<ChangesDto> farmChanges = new ArrayList<>();
+        ArrayList<FarmChangesDto> farmChanges = new ArrayList<>();
         ArrayList<HashMap<String, ChangesDto>> cropChanges = new ArrayList<>();
         FarmerList farmerList = entry.getValue();
 
         if (aFinal == null) {
             System.out.println("new plot");
-            farmChanges.add(new ChangesDto("new plot", plot, null));
+            farmChanges.add(new FarmChangesDto("new plot", plot, null));
         } else {
             if (!aFinal.getFarmerName().trim().equals(farmerList.getFarmerName())) {
-                farmChanges.add(new ChangesDto("Farmer Name", aFinal.getFarmerName(), farmerList.getFarmerName()));
+                farmChanges.add(new FarmChangesDto("Farmer Name", aFinal.getFarmerName(), farmerList.getFarmerName()));
             }
             if (!aFinal.getFarmName().trim().equals(farmerList.getFarmName())) {
-                farmChanges.add(new ChangesDto("Name of the Farm", aFinal.getFarmName(), farmerList.getFarmName()));
+                farmChanges.add(new FarmChangesDto("Name of the Farm", aFinal.getFarmName(), farmerList.getFarmName()));
             }
             if (aFinal.getTotalArea() != farmerList.getTotalArea()) {
-                farmChanges.add(new ChangesDto("Total Area", String.valueOf(aFinal.getTotalArea()), String.valueOf(farmerList.getTotalArea())));
+                farmChanges.add(new FarmChangesDto("Total Area", String.valueOf(aFinal.getTotalArea()), String.valueOf(farmerList.getTotalArea())));
             }
             if (!aFinal.getGps().trim().equals(farmerList.getGps())) {
-                farmChanges.add(new ChangesDto("GPS", aFinal.getGps(), farmerList.getGps()));
+                farmChanges.add(new FarmChangesDto("GPS", aFinal.getGps(), farmerList.getGps()));
             }
             if (!aFinal.getAddress().trim().equals(farmerList.getAddress())) {
-                farmChanges.add(new ChangesDto("Address", aFinal.getAddress(), farmerList.getAddress()));
+                farmChanges.add(new FarmChangesDto("Address", aFinal.getAddress(), farmerList.getAddress()));
             }
             if (!aFinal.getCity().trim().equals(farmerList.getCity())) {
-                farmChanges.add(new ChangesDto("City", aFinal.getCity(), farmerList.getCity()));
+                farmChanges.add(new FarmChangesDto("City", aFinal.getCity(), farmerList.getCity()));
             }
             if (!aFinal.getDateCert().equals(farmerList.getDateCert())) {
-                farmChanges.add(new ChangesDto("Application date for certification (yyyy-mm-dd)", String.valueOf(aFinal.getDateCert()), String.valueOf(farmerList.getDateCert())));
+                farmChanges.add(new FarmChangesDto("Application date for certification (yyyy-mm-dd)", String.valueOf(aFinal.getDateCert()), String.valueOf(farmerList.getDateCert())));
             }
             if (aFinal.getAplyRetrospe() != farmerList.getAplyRetrospe()) {
-                farmChanges.add(new ChangesDto("Applying for Retrospective consideration (Yes/No)", String.valueOf(aFinal.getAplyRetrospe()), String.valueOf(farmerList.getAplyRetrospe())));
+                farmChanges.add(new FarmChangesDto("Applying for Retrospective consideration (Yes/No)", String.valueOf(aFinal.getAplyRetrospe()), String.valueOf(farmerList.getAplyRetrospe())));
             }
             if (!aFinal.getCertification().trim().equals(farmerList.getCertification())) {
-                farmChanges.add(new ChangesDto("Certifications", aFinal.getCertification(), farmerList.getCertification()));
+                farmChanges.add(new FarmChangesDto("Certifications", aFinal.getCertification(), farmerList.getCertification()));
             }
             if (!aFinal.getFertilizer().trim().equals(farmerList.getFertilizer())) {
-                farmChanges.add(new ChangesDto("Types of fertilizer, pesticide used", aFinal.getFertilizer(), farmerList.getFertilizer()));
+                farmChanges.add(new FarmChangesDto("Types of fertilizer, pesticide used", aFinal.getFertilizer(), farmerList.getFertilizer()));
             }
             if (!aFinal.getFerUseDate().equals(farmerList.getFerUseDate())) {
-                farmChanges.add(new ChangesDto("Last date of use ", aFinal.getFerUseDate(), farmerList.getFerUseDate()));
+                farmChanges.add(new FarmChangesDto("Last date of use ", aFinal.getFerUseDate(), farmerList.getFerUseDate()));
             }
             if (!aFinal.getDateConfersion().equals(farmerList.getDateConfersion())) {
-                farmChanges.add(new ChangesDto("Starting date of Conversion period (yyyy-mm-dd)", String.valueOf(aFinal.getDateConfersion()), String.valueOf(farmerList.getDateConfersion())));
+                farmChanges.add(new FarmChangesDto("Starting date of Conversion period (yyyy-mm-dd)", String.valueOf(aFinal.getDateConfersion()), String.valueOf(farmerList.getDateConfersion())));
             }
             if (!aFinal.getDateorganic().equals(farmerList.getDateorganic())) {
-                farmChanges.add(new ChangesDto("Starting date of Organic Period (yyyy-mm-dd)", String.valueOf(aFinal.getDateorganic()), String.valueOf(farmerList.getDateorganic())));
+                farmChanges.add(new FarmChangesDto("Starting date of Organic Period (yyyy-mm-dd)", String.valueOf(aFinal.getDateorganic()), String.valueOf(farmerList.getDateorganic())));
             }
             if (!aFinal.getEujas_field().trim().equals(farmerList.getEujas_field())) {
-                farmChanges.add(new ChangesDto("Field Status EU/JAS ic1/ic2/ic3/org", aFinal.getEujas_field(), farmerList.getEujas_field()));
+                farmChanges.add(new FarmChangesDto("Field Status EU/JAS ic1/ic2/ic3/org", aFinal.getEujas_field(), farmerList.getEujas_field()));
             }
             try{
                 if (!aFinal.getEujas_harvest().trim().equals(farmerList.getEujas_harvest())) {
-                    farmChanges.add(new ChangesDto("Harvest status EU/JAS conv/ic/org", aFinal.getEujas_harvest(), farmerList.getEujas_harvest()));
+                    farmChanges.add(new FarmChangesDto("Harvest status EU/JAS conv/ic/org", aFinal.getEujas_harvest(), farmerList.getEujas_harvest()));
                 }
             }catch (NullPointerException e){
                 if (null != farmerList.getEujas_harvest()){
-                    farmChanges.add(new ChangesDto("Harvest status EU/JAS conv/ic/org", null, farmerList.getEujas_harvest()));
+                    farmChanges.add(new FarmChangesDto("Harvest status EU/JAS conv/ic/org", null, farmerList.getEujas_harvest()));
                 }
                 e.printStackTrace();
             }
 
             if (!aFinal.getUsda_field().trim().equals(farmerList.getUsda_field())) {
-                farmChanges.add(new ChangesDto("Field status NOP ic1/ic2/ic3/org", aFinal.getUsda_field(), farmerList.getUsda_field()));
+                farmChanges.add(new FarmChangesDto("Field status NOP ic1/ic2/ic3/org", aFinal.getUsda_field(), farmerList.getUsda_field()));
             }
             if (!aFinal.getUsda_harvest().trim().equals(farmerList.getUsda_harvest())) {
-                farmChanges.add(new ChangesDto("Harvest status NOP conv/org", aFinal.getUsda_harvest(), farmerList.getUsda_harvest()));
+                farmChanges.add(new FarmChangesDto("Harvest status NOP conv/org", aFinal.getUsda_harvest(), farmerList.getUsda_harvest()));
             }
 
             List<FarmerListCrop> farmerListCrops = farmerList.getFarmerListCropList();

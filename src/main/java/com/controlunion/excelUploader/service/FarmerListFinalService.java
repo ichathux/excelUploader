@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FarmerListFinalService {
 
-    private final FarmerListFinalRepository farmerListFinalRepository;
+    private final FarmerListFinalRepository repository;
     private final Random random = new Random();
 
     public int createCuid() {
@@ -44,7 +44,7 @@ public class FarmerListFinalService {
 
     private boolean checkCUIDExist(int cuid) {
         try{
-            return farmerListFinalRepository.existsByCufarmerID(cuid);
+            return repository.existsByCufarmerID(cuid);
         }catch (Exception e){
             e.printStackTrace();
             return false;
@@ -54,7 +54,7 @@ public class FarmerListFinalService {
 
     public ArrayList<FarmerListFinal> getAllFarmerListByProjectIdAndAuditId(int proId, int auditId) {
         try {
-            return farmerListFinalRepository.findAllByProIDAndAuditID(proId, auditId).orElse(new ArrayList<>());
+            return repository.findAllByProIDAndAuditID(proId, auditId).orElse(new ArrayList<>());
         }catch (Exception e){
             e.printStackTrace();
             return new ArrayList<>();
@@ -72,7 +72,7 @@ public class FarmerListFinalService {
 
     public ArrayList<FarmerListFinal> getAllFarmerListByProjectId(int proId) {
         try {
-            return farmerListFinalRepository.findAllByProID(proId).orElse(new ArrayList<>());
+            return repository.findAllByProID(proId).orElse(new ArrayList<>());
         }catch (Exception e){
             e.printStackTrace();
             return new ArrayList<>();
@@ -82,7 +82,8 @@ public class FarmerListFinalService {
 
     public void deleteFarmerListFinals(List<FarmerListFinal> values) {
         try {
-            farmerListFinalRepository.deleteAll(values);
+            repository.deleteAll(values);
+            repository.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -90,7 +91,7 @@ public class FarmerListFinalService {
 
     public void deleteFarmerListFinalByProId(int proID) {
         try {
-            farmerListFinalRepository.deleteAllByProID(proID);
+            repository.deleteAllByProID(proID);
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -114,7 +115,7 @@ public class FarmerListFinalService {
                 farmerListFinal.setFarmerListCropFinalList(farmerListFinalCrops);
                 farmerListFinals.add(farmerListFinal);
             }
-            return farmerListFinalRepository.saveAll(farmerListFinals);
+            return repository.saveAll(farmerListFinals);
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();
@@ -124,7 +125,7 @@ public class FarmerListFinalService {
 
     public ArrayList<FarmerListFinal> getBeforeCertifiedFarmLIstFinal(int proId, int auditId) {
         try{
-            return farmerListFinalRepository.findAllByProIDAndAuditIDIsLessThanOrderByListid(proId, auditId).orElse(new ArrayList<>());
+            return repository.findAllByProIDAndAuditIDIsLessThanOrderByListid(proId, auditId).orElse(new ArrayList<>());
         }catch (Exception e){
             e.printStackTrace();
             return new ArrayList<>();

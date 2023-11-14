@@ -102,7 +102,7 @@ public class PlanService {
 
             if (farmerListsFarmerListFinals.isEmpty()){
                 System.out.println("no prev finals");
-                farmerListService.deleteFromFarmerList(farmerLists);
+//                farmerListService.deleteFromFarmerList(farmerLists);
                 farmerListFinalService.saveToFarmerListFinal(farmerLists);
                 return planRepository.save(plan);
             }else{
@@ -111,9 +111,6 @@ public class PlanService {
                 farmerListFinalCropsService.deleteFarmerListCropFinalByFarmerListFinal(farmerListsFarmerListFinals);
                 System.out.println("deleting prev farmerlist final");
                 farmerListFinalService.deleteFarmerListFinals(farmerListsFarmerListFinals);
-                System.out.println("getting new farmerlist");
-                farmerListFinalService.getAllFarmerListByProjectId(
-                        plan.getProID().getId().intValue());
                 System.out.println("save farmerlist final new");
                 farmerListFinalService.saveToFarmerListFinal(farmerLists);
                 System.out.println("save plan");

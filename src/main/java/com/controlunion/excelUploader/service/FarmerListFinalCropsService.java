@@ -21,6 +21,7 @@ public class FarmerListFinalCropsService {
             ArrayList<FarmerListCropFinal> farmerListCropFinals = new ArrayList<>();
             farmerListsFarmerListFinals.forEach(f -> farmerListCropFinals.addAll(f.getFarmerListCropFinalList()));
             repository.deleteAll(farmerListCropFinals);
+            repository.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }
