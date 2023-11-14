@@ -123,6 +123,7 @@ public class FileServiceNewTest {
             }
             List<FarmerListFinal> fFinals;
             if (lastCertifiedAuditId != 0){
+
                 fFinals = farmerListFinalService
                         .getBeforeCertifiedFarmLIstFinal(proId, auditId);
             }else{
@@ -157,26 +158,22 @@ public class FileServiceNewTest {
 
                     endTime = System.currentTimeMillis();
                     log.info("task end : " + (endTime - startTime) + "ms");
-//                    System.out.println("new user count " + newUser);
                     farmerListService.saveFarmerList(proId, auditId, farmerLists);
-
+                    endTime = System.currentTimeMillis();
+                    log.info("task end : " + (endTime - startTime) + "ms");
                     return ResponseEntity.ok().build();
                 } catch (DataIntegrityViolationException e) {
                     e.printStackTrace();
-//                    System.out.println("error");
                     errorList.add(ExcelErrorResponse.builder()
                             .error("Data already contained. Project :" + projectName + " Audit : " + auditId).build());
                     return ResponseEntity.badRequest().body(errorList);
                 } catch (Exception e) {
-//                    System.out.println("Err");
                     e.printStackTrace();
                     errorList.add(ExcelErrorResponse.builder()
                             .error(e.getMessage()).build());
                     return ResponseEntity.badRequest().body(errorList);
                 }
             } else {
-
-//                log.error(className + ".errors while reading file " + errorList);
                 return ResponseEntity.badRequest().body(errorList);
             }
         } catch (IOException e) {
@@ -186,13 +183,11 @@ public class FileServiceNewTest {
                     .error(e.getMessage()).build());
             return ResponseEntity.badRequest().body(errorList);
         } catch (Exception e) {
-//            log.error(e.getMessage());
             e.printStackTrace();
             errorList.add(ExcelErrorResponse.builder()
                     .error(e.getMessage()).build());
             return ResponseEntity.badRequest().body(errorList);
         }
-//        return ResponseEntity.badRequest().body(errorList);
     }
 
     private FarmerListComparisonDto readAuditData(Iterator<Row> iterator,
@@ -208,7 +203,6 @@ public class FileServiceNewTest {
         int cuid = 0;
         String farmerCode = "";
         String plotCode = "";
-//        boolean isNewFarmer = false;
 
         if (cropMapping.keySet().size() == 0) {
             errorList.add(ExcelErrorResponse.builder()
@@ -222,7 +216,6 @@ public class FileServiceNewTest {
 
 
         while (iterator.hasNext()) {
-//            System.out.println("*********************************new Row***********************");
             Row row = iterator.next();
             if (isRowEmpty(row)) {
                 continue;
@@ -1000,25 +993,25 @@ public class FileServiceNewTest {
                         .orElse(null);
 
                 if (prevFarmerlistCrop == null) {
-                    changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Crop deleted", crop_final.getCropID(), 0));
+                    changesMap.put("cropChange", new ChangesDto(prevFarmerlistCrop, "Crop deleted", crop_final.getCropID(), 0));
 //                changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(),"Crop deleted",crop_final.getCropID(), farmerListCrop));
                     arrayList.add(changesMap);
                 } else {
 
                     if (crop_final.getNoOfPlant() != prevFarmerlistCrop.getNoOfPlant()) {
-                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Number of Plants", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+                        changesMap.put("cropChange", new ChangesDto(prevFarmerlistCrop, "Number of Plants", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
                         arrayList.add(changesMap);
                     }
                     if (crop_final.getEstiYield() != prevFarmerlistCrop.getEstiYield()) {
-                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Estimated Yield (Kg) / year", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+                        changesMap.put("cropChange", new ChangesDto(prevFarmerlistCrop, "Estimated Yield (Kg) / year", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
                         arrayList.add(changesMap);
                     }
                     if (crop_final.getRealYield() != prevFarmerlistCrop.getRealYield()) {
-                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+                        changesMap.put("cropChange", new ChangesDto(prevFarmerlistCrop, "Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
                         arrayList.add(changesMap);
                     }
                     if (crop_final.getNoOfSesons() != prevFarmerlistCrop.getNoOfSesons()) {
-                        changesMap.put("cropChange", new ChangesDto(crop_final.getCropID(), "Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+                        changesMap.put("cropChange", new ChangesDto(prevFarmerlistCrop, "Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
                         arrayList.add(changesMap);
                     }
                 }
@@ -1028,7 +1021,7 @@ public class FileServiceNewTest {
                     .filter(crop -> !checkedCrops.contains(crop.getCropID()))
                     .map(crop -> {
                         HashMap<String, ChangesDto> changesMap = new LinkedHashMap<>();
-                        changesMap.put("cropChange", new ChangesDto(crop.getCropID(), "new crop added", 0, crop.getId()));
+                        changesMap.put("cropChange", new ChangesDto(crop, "new crop added", 0, crop.getId()));
                         return arrayList.add(changesMap);
 
 //                    return changesCrop.put(crop.getCropID(), changesMap);

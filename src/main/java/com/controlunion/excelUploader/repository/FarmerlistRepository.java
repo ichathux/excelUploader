@@ -14,11 +14,6 @@ import java.util.Optional;
 @Repository
 public interface FarmerlistRepository extends CrudRepository<FarmerList, FarmerListID> {
 
-//    Optional<List<FarmerList>> findAllByProIDAndAuditID(int proId, int auditId);
     Optional<ArrayList<FarmerList>> findAllByProIDAndAuditID(int proId, int auditId);
     void deleteAllByProIDAndAuditID(int proId, int auditId);
-
-//    @Modifying
-//    @Query(value = "INSERT INTO your_table (column1, column2) VALUES (:value1, :value2)", nativeQuery = true)
-//    void bulkInsert();
 }

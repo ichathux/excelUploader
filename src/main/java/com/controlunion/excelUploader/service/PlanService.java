@@ -29,7 +29,7 @@ public class PlanService {
 
     public ResponseEntity<List<PlanDto>> getAllPlansForProId(long proID) {
         try{
-            Optional<List<Plan>> plans = planRepository.findAllByProID(projectService.getProjectByProjectId(proID));
+            Optional<ArrayList<Plan>> plans = planRepository.findAllByProID(projectService.getProjectByProjectId(proID));
             if (plans.isPresent()) {
                 List<PlanDto> planDtos = new ArrayList<>();
                 for (Plan plan : plans.get()) {
@@ -51,7 +51,6 @@ public class PlanService {
             Optional<Plan> plan = planRepository.findTopOneByProIDAndCertifiedOrderByPlanIDDesc(
                     projectService.getProjectByProjectId(proID),
                     true);
-//        Optional<Plan> plan = planRepository.findTopByPlanIDLessThanAndProIDAndCertified(auditId, (int) proID, true);
             return plan.orElse(null);
         }catch (Exception e){
             e.printStackTrace();
@@ -94,14 +93,11 @@ public class PlanService {
 
     public Plan certifyPlan(Plan plan) {
         try {
-            List<FarmerList> farmerLists = farmerListService.getFarmListForProIdAndAuditId2(
+            ArrayList<FarmerList> farmerLists = farmerListService.getFarmListForProIdAndAuditId2(
                     plan.getProID().getId().intValue(),
                     plan.getPlanID().intValue());
 
-//            List<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
-//                    plan.getProID().getId().intValue(),
-//                    plan.getPlanID().intValue());
-            List<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectId(
+            ArrayList<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectId(
                     plan.getProID().getId().intValue());
 
             if (farmerListsFarmerListFinals.isEmpty()){
@@ -115,8 +111,6 @@ public class PlanService {
                 farmerListFinalCropsService.deleteFarmerListCropFinalByFarmerListFinal(farmerListsFarmerListFinals);
                 System.out.println("deleting prev farmerlist final");
                 farmerListFinalService.deleteFarmerListFinals(farmerListsFarmerListFinals);
-//                System.out.println("deleting prev farmerlist");
-//                farmerListService.deleteFromFarmerList(farmerLists);
                 System.out.println("getting new farmerlist");
                 farmerListFinalService.getAllFarmerListByProjectId(
                         plan.getProID().getId().intValue());

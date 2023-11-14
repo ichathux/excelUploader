@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,16 +28,16 @@ public class ProjectService {
         }
     }
 
-    public ResponseEntity<List<ProjectDto>> getProjectsByName(String name) {
+    public ResponseEntity<ArrayList<ProjectDto>> getProjectsByName(String name) {
         try {
-            List<Projects> projects = projectRepository
+            ArrayList<Projects> projects = projectRepository
                     .findByProNameContaining(name)
                     .orElseThrow(() -> new RuntimeException("No projects found for given name"));
 
             return ResponseEntity
                     .ok(projects.stream()
-                                    .map(p -> ProjectMapper.INSTANCE.projectsToProjectDto(p))
-                                    .collect(Collectors.toList()
+                                    .map(ProjectMapper.INSTANCE::projectsToProjectDto)
+                                    .collect(Collectors.toCollection(ArrayList::new)
                                     ));
         }catch (Exception e){
             e.printStackTrace();

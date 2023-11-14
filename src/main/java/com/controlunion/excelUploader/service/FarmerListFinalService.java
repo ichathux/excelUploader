@@ -52,7 +52,7 @@ public class FarmerListFinalService {
     }
 
 
-    public List<FarmerListFinal> getAllFarmerListByProjectIdAndAuditId(int proId, int auditId) {
+    public ArrayList<FarmerListFinal> getAllFarmerListByProjectIdAndAuditId(int proId, int auditId) {
         try {
             return farmerListFinalRepository.findAllByProIDAndAuditID(proId, auditId).orElse(new ArrayList<>());
         }catch (Exception e){
@@ -70,7 +70,7 @@ public class FarmerListFinalService {
 //        }
 //    }
 
-    public List<FarmerListFinal> getAllFarmerListByProjectId(int proId) {
+    public ArrayList<FarmerListFinal> getAllFarmerListByProjectId(int proId) {
         try {
             return farmerListFinalRepository.findAllByProID(proId).orElse(new ArrayList<>());
         }catch (Exception e){
@@ -122,7 +122,7 @@ public class FarmerListFinalService {
 
     }
 
-    public List<FarmerListFinal> getBeforeCertifiedFarmLIstFinal(int proId, int auditId) {
+    public ArrayList<FarmerListFinal> getBeforeCertifiedFarmLIstFinal(int proId, int auditId) {
         try{
             return farmerListFinalRepository.findAllByProIDAndAuditIDIsLessThanOrderByListid(proId, auditId).orElse(new ArrayList<>());
         }catch (Exception e){

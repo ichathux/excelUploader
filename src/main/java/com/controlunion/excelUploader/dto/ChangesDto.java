@@ -15,9 +15,9 @@ public class ChangesDto {
     private String last;
     private String current;
     private String change;
-    private int cropId;
+    private FarmerListCrop cropId;
 
-    public ChangesDto(int cropId, String chnage, Number last, Number current) {
+    public ChangesDto(FarmerListCrop cropId, String chnage, Number last, Number current) {
         this.last = String.valueOf(last);
         this.current = String.valueOf(current);
         this.change = chnage;
