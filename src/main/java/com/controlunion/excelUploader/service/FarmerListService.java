@@ -22,6 +22,7 @@ public class FarmerListService {
     private final FarmerListFinalService farmerListFinalService;
     private final CropService cropService;
     private final FarmerListDeletedService farmerListDeletedService;
+    private final JDBCBatchInsertService jdbcBatchInsertService;
 
     @Transactional
     public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) {
@@ -31,12 +32,14 @@ public class FarmerListService {
 
         if (farmerListsExist.isEmpty()) {
             repository.saveAll(farmerLists);
+//            jdbcBatchInsertService.insertAsBatchGroup(farmerLists);
         } else {
             log.info("deleted old farmer lists");
             repository.deleteAllByProIDAndAuditID(proId, auditId);
             repository.flush();
             log.info("save new farmer lists");
             repository.saveAll(farmerLists);
+//            jdbcBatchInsertService.insertAsBatchGroup(farmerLists);
         }
         return ResponseEntity.badRequest().build();
     }

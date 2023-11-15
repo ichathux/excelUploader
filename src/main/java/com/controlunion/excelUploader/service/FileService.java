@@ -304,6 +304,7 @@ public class FileService {
 //                                            .build());
                                     }
                                 } else {
+                                    farmerList.setIsNew(1);
                                     if (farmerCodeVsCuid.containsKey(farmerCode)) {
                                         cuid = farmerCodeVsCuid.get(farmerCode);
                                     } else {
@@ -331,7 +332,7 @@ public class FileService {
                                             System.out.println("found invalid farmer code for cuid " + cuid);
                                             farmerCode = farmerList.getFarCodeEUJAS();
                                         } else {
-//                                            farmerList.setIsNew(1);
+                                            farmerList.setIsNew(1);
                                             if (farmerCodeVsCuid.containsKey(farmerCode)) {
                                                 cuid = farmerCodeVsCuid.get(farmerCode);
                                             } else {
@@ -969,13 +970,13 @@ public class FileService {
                         changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Number of Plants", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
                     }
                     if (crop_final.getEstiYield() != currentFarmerlistCrop.getEstiYield()) {
-                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Estimated Yield (Kg) / year", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
+                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Estimated Yield (Kg) / year", crop_final.getEstiYield(), currentFarmerlistCrop.getEstiYield()));
                     }
                     if (crop_final.getRealYield() != currentFarmerlistCrop.getRealYield()) {
-                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
+                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Realistic Yield in Last year (kg)", crop_final.getRealYield(), currentFarmerlistCrop.getRealYield()));
                     }
                     if (crop_final.getNoOfSesons() != currentFarmerlistCrop.getNoOfSesons()) {
-                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : No of Seasons", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
+                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : No of Seasons", crop_final.getNoOfSesons(), currentFarmerlistCrop.getNoOfSesons()));
                     }
                 }
             }

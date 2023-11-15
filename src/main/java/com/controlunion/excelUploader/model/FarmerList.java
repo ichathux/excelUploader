@@ -14,6 +14,8 @@ import javax.persistence.*;
 import java.sql.Date;
 import java.util.List;
 
+import static javax.persistence.GenerationType.SEQUENCE;
+
 /**
  * @author : Udara Deshan <udaradeshan.ud@gmail.com>
  * @since : 10/31/2022
@@ -28,6 +30,8 @@ public class FarmerList implements FarmerCommon {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
+//    @GeneratedValue(strategy = SEQUENCE, generator = "seqGen")
+//    @SequenceGenerator(name = "seqGen", sequenceName = "seq", initialValue = 1)
     @Column(name = "listid", nullable = true)
     private int listid;
     @Id
