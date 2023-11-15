@@ -49,8 +49,11 @@ public class PlanService {
         try{
             log.info("Getting last certified Plan for proId: " + proID);
             Optional<Plan> plan = planRepository.findTopOneByProIDAndCertifiedOrderByPlanIDDesc(
+
                     projectService.getProjectByProjectId(proID),
                     true);
+//            log.info("found last certified Plan: " + plan.get().getPlanID());
+
             return plan.orElse(null);
         }catch (Exception e){
             e.printStackTrace();

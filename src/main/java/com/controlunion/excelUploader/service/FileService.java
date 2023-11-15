@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,7 +36,6 @@ public class FileService {
     private final FarmerListService farmerListService;
     private final FarmerListFinalService farmerListFinalService;
     private final PlanService planService;
-    private final FarmerListCropFinalService farmerListCropFinalService;
     private final FarmerListDeletedService farmerListDeletedService;
     private long startTime;
     private long endTime;
@@ -149,7 +147,8 @@ public class FileService {
                     }
 
                     endTime = System.currentTimeMillis();
-                    log.info("task end : " + (endTime - startTime) + "ms");
+
+//                    System.out.println(farmerLists);
                     farmerListService.saveFarmerList(proId, auditId, farmerLists);
                     endTime = System.currentTimeMillis();
                     log.info("task end : " + (endTime - startTime) + "ms");
@@ -247,7 +246,7 @@ public class FileService {
                         continue;
                     }
                 }
-
+//                System.out.println("flist size "+fFinals.size());
                 switch (cell.getColumnIndex()) {
                     case 0:
                         try {
@@ -317,6 +316,7 @@ public class FileService {
                             } else {
 //                                System.out.println("contain cuid");
                                 if (fFinals != null) {
+
                                     farmerListFinal = fFinals.stream()
                                             .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
                                             .findAny()
@@ -354,6 +354,7 @@ public class FileService {
                                             cuid = farmerListFinal.getCufarmerID();
 
                                         } else {
+
                                             cuid = farmerListFinal.getCufarmerID();
 
                                         }
@@ -784,9 +785,9 @@ public class FileService {
             farmerLists.add(farmerList);
 //            System.out.println(entry.getValue().getCufarmerID()+" is new : "+entry.getValue().getIsNew());
             FarmerListFinal ff = farmerListFinals.stream().filter(f -> f.getCufarmerID() == farmerList.getCufarmerID() && f.getPlotCode().equals(farmerList.getPlotCode())).findFirst().orElse(null);
-            if (ff == null){
-                farmerList.setIsNew(1);
-            }
+//            if (ff == null){
+//                farmerList.setIsNew(1);
+//            }
             boolean isRemoved = farmerListFinals.remove(aFinal);
 
 //            assert aFinal != null;
@@ -1457,7 +1458,7 @@ public class FileService {
         if (!mandatory_fields.isCity()) {
             errorList.add(ExcelErrorResponse.builder()
                     .location("Row:" + row)
-                    .error("Unit City is mandatory.")
+                    .error("City is mandatory.")
                     .build());
 
         }

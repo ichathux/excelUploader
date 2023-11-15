@@ -126,7 +126,7 @@ public class FarmerListFinalService {
     public ArrayList<FarmerListFinal> getBeforeCertifiedFarmLIstFinal(int proId, int auditId) {
         try{
 
-            ArrayList<FarmerListFinal> farmerListFinals = repository.findAllByProIDAndAuditIDIsLessThanOrderByListid(proId, auditId).orElse(new ArrayList<>());
+            ArrayList<FarmerListFinal> farmerListFinals = repository.findAllByProIDAndAuditID(proId, auditId).orElse(new ArrayList<>());
             log.info("getting farmerlist final for "+proId+" "+auditId+" size"+farmerListFinals.size() );
             return farmerListFinals;
         }catch (Exception e){
