@@ -97,8 +97,9 @@ public class PlanService {
                     plan.getProID().getId().intValue(),
                     plan.getPlanID().intValue());
 
-            ArrayList<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectId(
-                    plan.getProID().getId().intValue());
+            ArrayList<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
+                    plan.getProID().getId().intValue(),
+                    plan.getPlanID().intValue());
 
             if (farmerListsFarmerListFinals.isEmpty()){
                 System.out.println("no prev finals");

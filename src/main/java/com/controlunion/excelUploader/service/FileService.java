@@ -119,7 +119,7 @@ public class FileService {
             List<FarmerListFinal> fFinals;
             if (lastCertifiedAuditId != 0) {
                 fFinals = farmerListFinalService
-                        .getBeforeCertifiedFarmLIstFinal(proId, auditId);
+                        .getBeforeCertifiedFarmLIstFinal(proId, (int)lastCertifiedAuditId);
             } else {
                 fFinals = null;
             }
@@ -782,12 +782,21 @@ public class FileService {
 
             FarmerList farmerList = compareFarmData(entry, aFinal);
             farmerLists.add(farmerList);
+//            System.out.println(entry.getValue().getCufarmerID()+" is new : "+entry.getValue().getIsNew());
             FarmerListFinal ff = farmerListFinals.stream().filter(f -> f.getCufarmerID() == farmerList.getCufarmerID() && f.getPlotCode().equals(farmerList.getPlotCode())).findFirst().orElse(null);
             if (ff == null){
                 farmerList.setIsNew(1);
             }
-            farmerListFinals.remove(aFinal);
+            boolean isRemoved = farmerListFinals.remove(aFinal);
+
+//            assert aFinal != null;
+//            System.out.println(aFinal!=null?aFinal.getCufarmerID():0);
+//            assert aFinal != null;
+//            System.out.println("is removed : "+isRemoved+" "+entry.getValue().getCufarmerID()+" is new : "+entry.getValue().getIsNew());
+
         }
+        System.out.println("Total lis "+farmerLists.size());
+        System.out.println("must be remove "+farmerListFinals.size());
         System.out.println("comparison done " + farmerLists.size());
 
         if (!farmerListFinals.isEmpty()) {
