@@ -1,17 +1,17 @@
 package com.controlunion.excelUploader.service;
 
+import com.controlunion.excelUploader.dto.ComparisonResponseDto;
 import com.controlunion.excelUploader.model.*;
 import com.controlunion.excelUploader.repository.FarmerlistRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +20,8 @@ public class FarmerListService {
 
     private final FarmerlistRepository repository;
     private final FarmerListFinalService farmerListFinalService;
+    private final CropService cropService;
+    private final FarmerListDeletedService farmerListDeletedService;
 
     @Transactional
     public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) {
@@ -48,20 +50,41 @@ public class FarmerListService {
         }
     }
 
-    public ArrayList getFarmListForProIdAndAuditId(int proId, int auditId) {
+    public ComparisonResponseDto getFarmListForProIdAndAuditId(int proId, int auditId) {
+        ComparisonResponseDto comparisonResponseDto = new ComparisonResponseDto();
         try {
             Optional<ArrayList<FarmerList>> farmerList = repository.findAllByProIDAndAuditID(proId, auditId);
             if (farmerList.isPresent()) {
                 System.out.println("size of list : "+farmerList.get().size());
-                return farmerList.get();
-            } else {
-                ArrayList<FarmerListFinal> farmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(proId, auditId);
-                if (farmerListFinals != null) {
-                    return farmerListFinals;
-                } else {
-                    return new ArrayList();
-                }
+                ArrayList<FarmerList> farmerListsNew = farmerList.get().stream()
+                        .filter(f -> f.getIsNew() == 1)
+                        .peek(f -> f.setChngCropdata(f.getFarmerListCropList().stream()
+                                .map(c -> cropService.getCropNameById(c.getCropID()).getCropName())
+                                .collect(Collectors.joining(", ")))
+                        )
+                        .collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<FarmerList> farmerListsOldChanged = farmerList.get().stream()
+                        .filter(f -> f.getIsChange() == 1)
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+//                ArrayList<FarmerList> farmerLists = farmerList.get().stream()
+//                        .map(f -> {
+//                            if (f.getIsNew()== 1){
+//                                f.setChngCropdata(f.getFarmerListCropList().stream()
+//                                        .map(c -> cropService.getCropNameById(c.getCropID()).getCropName())
+//                                        .collect(Collectors.joining(", ")));
+//
+//                                return f;
+//                            }else
+//                                return f;
+//                        })
+//                        .collect(Collectors.toCollection(ArrayList::new));
+                comparisonResponseDto.setNewFarmerList(farmerListsNew);
+                comparisonResponseDto.setExistingFarmerList(farmerListsOldChanged);
+                comparisonResponseDto.setDeletedFarmerList(farmerListDeletedService.getAllByProIdAndAuditId(proId, auditId));
+
             }
+            return comparisonResponseDto;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

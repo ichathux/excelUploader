@@ -1,5 +1,6 @@
 package com.controlunion.excelUploader.controller;
 
+import com.controlunion.excelUploader.dto.ComparisonResponseDto;
 import com.controlunion.excelUploader.model.FarmerList;
 import com.controlunion.excelUploader.model.Plan;
 import com.controlunion.excelUploader.service.FarmerListService;
@@ -19,8 +20,8 @@ public class FarmerListController {
     private final FarmerListService farmerListService;
 
     @GetMapping("getFarmList")
-    public ResponseEntity<List> getFarmerListChanges(@RequestParam("proId") int proId,
-                                                                @RequestParam("auditId") int auditId){
+    public ResponseEntity<ComparisonResponseDto> getFarmerListChanges(@RequestParam("proId") int proId,
+                                                                      @RequestParam("auditId") int auditId){
         log.info("got from back end : project Id "+proId +" auditId : "+auditId);
         return ResponseEntity.ok().body(farmerListService.getFarmListForProIdAndAuditId(proId, auditId));
     }

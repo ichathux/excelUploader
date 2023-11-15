@@ -58,7 +58,7 @@ public class FarmerListDeletedService {
         }
     }
 
-    public List<FarmerList_deleted> getAllByProIdAndAuditId(int proID, int auditId) {
+    public ArrayList<FarmerList_deleted> getAllByProIdAndAuditId(int proID, int auditId) {
         log.info(getClass().getName() + ".getAllByProIdAndAuditId proID : " + proID + " auditID : " + auditId);
         try {
             return farmerlistDeletedRepository

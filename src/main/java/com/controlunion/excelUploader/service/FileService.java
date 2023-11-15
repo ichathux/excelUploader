@@ -135,6 +135,10 @@ public class FileService {
 
             System.out.println("Read audit data done. total line " + lines + " read");
             workbook.close();
+            if (fFinals != null) {
+                log.info("size of old list : " + fFinals.size());
+            }
+            log.info("size of new list : " + farmerListComparisonDto.getMap1().size());
 
             if (errorList.isEmpty()) {
                 try {
@@ -318,6 +322,7 @@ public class FileService {
                                             .orElse(null);
 
                                     if (farmerListFinal == null) {
+                                        farmerList.setIsNew(1);
                                         int finalCuid = cuid;
                                         farmerListFinal = fFinals.stream()
                                                 .filter(f -> f.getCufarmerID() == finalCuid)
@@ -326,7 +331,7 @@ public class FileService {
                                             System.out.println("found invalid farmer code for cuid " + cuid);
                                             farmerCode = farmerList.getFarCodeEUJAS();
                                         } else {
-                                            farmerList.setIsNew(1);
+//                                            farmerList.setIsNew(1);
                                             if (farmerCodeVsCuid.containsKey(farmerCode)) {
                                                 cuid = farmerCodeVsCuid.get(farmerCode);
                                             } else {
@@ -336,6 +341,7 @@ public class FileService {
                                         }
 
                                     } else {
+                                        farmerList.setIsNew(0);
                                         if (cuid != farmerListFinal.getCufarmerID()) {
 //                                    cuid not matched send error message to user
 
@@ -348,7 +354,7 @@ public class FileService {
 
                                         } else {
                                             cuid = farmerListFinal.getCufarmerID();
-                                            farmerList.setIsNew(0);
+
                                         }
                                     }
                                 } else {
@@ -795,6 +801,7 @@ public class FileService {
             return "Error converting HashMap to JSON";
         }
     }
+
     public String convertCropDataChangesTo(ArrayList<ChangesDto> list) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -843,8 +850,11 @@ public class FileService {
         FarmerList farmerList = entry.getValue();
 
         if (aFinal == null) {
+
             System.out.println("new plot");
             farmChanges.add(new FarmChangesDto("new plot", plot, null));
+            farmerList.setChngCropdata("[]");
+
         } else {
             if (!aFinal.getFarmerName().trim().equals(farmerList.getFarmerName())) {
                 farmChanges.add(new FarmChangesDto("Farmer Name", aFinal.getFarmerName(), farmerList.getFarmerName()));
@@ -907,16 +917,19 @@ public class FileService {
             }
 
             List<FarmerListCrop> farmerListCrops = farmerList.getFarmerListCropList();
-            List<FarmerListCropFinal> farmerListCropFinals = farmerListCropFinalService
-                    .findFarmerListCropFinalsForFarmerFarmerListFinal(aFinal);
+//            List<FarmerListCropFinal> farmerListCropFinals = farmerListCropFinalService
+//                    .findFarmerListCropFinalsForFarmerFarmerListFinal(aFinal);
+
+            List<FarmerListCropFinal> farmerListCropFinals = aFinal.getFarmerListCropFinalList();
+
 
             cropChanges = compareCropsData(farmerListCropFinals,
                     farmerListCrops);
 
-            if (!cropChanges.isEmpty()){
-                String cropChangesStr = convertCropDataChangesTo(cropChanges);
-                farmerList.setChngCropdata(cropChangesStr);
-            }
+//            if (!cropChanges.isEmpty()){
+            String cropChangesStr = convertCropDataChangesTo(cropChanges);
+            farmerList.setChngCropdata(cropChangesStr);
+//            }
 
         }
         if (cropChanges.size() > 0 || farmChanges.size() > 0) {
@@ -926,39 +939,47 @@ public class FileService {
         return farmerList;
     }
 
-    private ArrayList< ChangesDto> compareCropsData(List<FarmerListCropFinal> farmerListCrops_final,
-                                                                    List<FarmerListCrop> farmerListCrops) {
+    private ArrayList<ChangesDto> compareCropsData(List<FarmerListCropFinal> farmerListCrops_final,
+                                                   List<FarmerListCrop> farmerListCrops) {
 
         ArrayList<Integer> checkedCrops = new ArrayList<>();
         ArrayList<ChangesDto> changesMap = new ArrayList<>();
-
+        log.info("comparing with ");
         try {
             for (FarmerListCropFinal crop_final : farmerListCrops_final) {
 
                 checkedCrops.add(crop_final.getCropID());
-                FarmerListCrop prevFarmerlistCrop = farmerListCrops.stream()
+
+                FarmerListCrop currentFarmerlistCrop = farmerListCrops.stream()
                         .filter(s -> s.getCropID() == crop_final.getCropID()
                                 && s.getPlotCode().trim().equals(crop_final.getPlotCode()))
                         .findFirst()
                         .orElse(null);
+
                 String cropName = cropService.getCropNameById(crop_final.getCropID()).getCropName();
-                if (prevFarmerlistCrop == null) {
-                    changesMap.add(new ChangesDto(prevFarmerlistCrop, cropName + " : Removed ", 0, 0));
+                if (currentFarmerlistCrop == null) {
+//                    check crop deleted
+                    changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Number of Plants ", crop_final.getNoOfPlant(), 0));
+                    changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Estimated Yield (Kg) / year ", crop_final.getEstiYield(), 0));
+                    changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : No of Seasons ", crop_final.getNoOfSesons(), 0));
+                    changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Realistic Yield in Last year (kg) ", crop_final.getRealYield(), 0));
                 } else {
-                    if (crop_final.getNoOfPlant() != prevFarmerlistCrop.getNoOfPlant()) {
-                        changesMap.add(new ChangesDto(prevFarmerlistCrop, cropName + " : Number of Plants", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+//                    check crop changes
+                    if (crop_final.getNoOfPlant() != currentFarmerlistCrop.getNoOfPlant()) {
+                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Number of Plants", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
                     }
-                    if (crop_final.getEstiYield() != prevFarmerlistCrop.getEstiYield()) {
-                        changesMap.add(new ChangesDto(prevFarmerlistCrop, cropName + " : Estimated Yield (Kg) / year", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+                    if (crop_final.getEstiYield() != currentFarmerlistCrop.getEstiYield()) {
+                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Estimated Yield (Kg) / year", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
                     }
-                    if (crop_final.getRealYield() != prevFarmerlistCrop.getRealYield()) {
-                        changesMap.add(new ChangesDto(prevFarmerlistCrop, cropName + " : Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+                    if (crop_final.getRealYield() != currentFarmerlistCrop.getRealYield()) {
+                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : Realistic Yield in Last year (kg)", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
                     }
-                    if (crop_final.getNoOfSesons() != prevFarmerlistCrop.getNoOfSesons()) {
-                        changesMap.add(new ChangesDto(prevFarmerlistCrop, cropName + " : No of Seasons", crop_final.getNoOfPlant(), prevFarmerlistCrop.getNoOfPlant()));
+                    if (crop_final.getNoOfSesons() != currentFarmerlistCrop.getNoOfSesons()) {
+                        changesMap.add(new ChangesDto(currentFarmerlistCrop, cropName + " : No of Seasons", crop_final.getNoOfPlant(), currentFarmerlistCrop.getNoOfPlant()));
                     }
                 }
             }
+//            check new crop added
             farmerListCrops.stream()
                     .filter(crop -> !checkedCrops.contains(crop.getCropID()))
                     .forEach(crop -> {

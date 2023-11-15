@@ -19,8 +19,7 @@ public class DeletedFarmerController {
     private final FarmerListDeletedService farmerListDeletedService;
 
     @GetMapping("getDeletedList")
-    public ResponseEntity<List<FarmerList_deleted>> getDeletedFarmersByProjectAndAudit(@RequestParam("proId") int proID,
-                                                                                       @RequestParam("auditId") int auditId){
+    public ResponseEntity<List<FarmerList_deleted>> getDeletedFarmersByProjectAndAudit(@RequestParam("proId") int proID, @RequestParam("auditId") int auditId){
         return ResponseEntity.ok(farmerListDeletedService.getAllByProIdAndAuditId(proID, auditId));
     }
 }
