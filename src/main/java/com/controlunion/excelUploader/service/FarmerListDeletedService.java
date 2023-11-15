@@ -76,7 +76,7 @@ public class FarmerListDeletedService {
                     .collect(Collectors.toCollection(ArrayList::new));
 
             for (FarmerList_deleted farmerList_deleted : farmerList_deleteds) {
-                System.out.println("deleteing " + farmerList_deleted);
+//                System.out.println("deleteing " + farmerList_deleted);
                 farmerListFinalService.deleteByCufarmerIDAndPlotCode(farmerList_deleted.getCufarmerID(), farmerList_deleted.getPlotCode());
             }
 
