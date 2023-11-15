@@ -315,9 +315,9 @@ public class FileService {
 //                                System.out.println("empty cuid");
 
                             } else {
-//                                System.out.println("contain cuid");
-                                if (fFinals != null) {
-
+                                System.out.println("contain cuid");
+                                if (fFinals.size() != 0) {
+                                    System.out.println("not null "+fFinals.size());
                                     farmerListFinal = fFinals.stream()
                                             .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
                                             .findAny()
@@ -361,12 +361,13 @@ public class FileService {
                                         }
                                     }
                                 } else {
-                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
-                                        cuid = farmerCodeVsCuid.get(farmerCode);
-                                    } else {
-                                        cuid = farmerListFinalService.createCuid();
-                                        farmerCodeVsCuid.put(farmerCode, cuid);
-                                    }
+                                    System.out.println("new user "+cuid);
+//                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
+//                                        cuid = farmerCodeVsCuid.get(farmerCode);
+//                                    } else {
+//                                        cuid = farmerListFinalService.createCuid();
+//                                        farmerCodeVsCuid.put(farmerCode, cuid);
+//                                    }
                                     farmerList.setIsNew(1);
                                 }
                             }
