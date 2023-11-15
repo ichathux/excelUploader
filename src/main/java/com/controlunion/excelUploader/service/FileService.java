@@ -120,7 +120,7 @@ public class FileService {
             List<FarmerListFinal> fFinals;
             if (lastCertifiedAuditId != 0) {
                 fFinals = farmerListFinalService
-                        .getBeforeCertifiedFarmLIstFinal(proId, (int)lastCertifiedAuditId);
+                        .getBeforeCertifiedFarmLIstFinal(proId, (int) lastCertifiedAuditId);
             } else {
                 fFinals = null;
             }
@@ -194,6 +194,7 @@ public class FileService {
                                                   long lastCertifiedAuditId,
                                                   List<FarmerListFinal> fFinals) {
 
+        log.info("start reading audit data");
         HashMap<String, ArrayList<String>> userMap = new HashMap<>(); // store farmer's plots
         int cuid = 0;
         String farmerCode = "";
@@ -318,17 +319,27 @@ public class FileService {
 //                                System.out.println("empty cuid");
 
                             } else {
-                                System.out.println("contain cuid");
-                                if (fFinals.size() != 0) {
-                                    System.out.println("not null "+fFinals.size());
+
+//                                System.out.println("contain cuid " + cuid);
+                                if (fFinals != null) {
+
+//                                    System.out.println("not null "+fFinals.size());
+
+                                    String finalPlotCode = row.getCell(7).getStringCellValue().trim();
+//                                    System.out.println(finalPlotCode);
+//                                    System.out.println(finalFarmerCode);
+
+                                    int finalCuid1 = cuid;
                                     farmerListFinal = fFinals.stream()
-                                            .filter(f -> f.getFarCodeEUJAS().trim().equals(finalFarmerCode))
+                                            .filter(f -> finalCuid1 == f.getCufarmerID())
                                             .findAny()
                                             .orElse(null);
 
                                     if (farmerListFinal == null) {
+//                                        System.out.println("not contain cuid inner");
                                         farmerList.setIsNew(1);
                                         int finalCuid = cuid;
+
                                         farmerListFinal = fFinals.stream()
                                                 .filter(f -> f.getCufarmerID() == finalCuid)
                                                 .findAny().orElse(null);
@@ -346,10 +357,12 @@ public class FileService {
                                         }
 
                                     } else {
+                                        System.out.println(farmerListFinal.getFarmerName());
+                                        System.out.println("contain cuid inner "+cuid+" "+farmerListFinal.getCufarmerID());
                                         farmerList.setIsNew(0);
+
                                         if (cuid != farmerListFinal.getCufarmerID()) {
 //                                    cuid not matched send error message to user
-
                                             errorList.add(ExcelErrorResponse.builder()
                                                     .error("cuid not matched")
                                                     .correctValue(String.valueOf(farmerListFinal.getCufarmerID()))
@@ -358,19 +371,20 @@ public class FileService {
                                             cuid = farmerListFinal.getCufarmerID();
 
                                         } else {
-
                                             cuid = farmerListFinal.getCufarmerID();
-
                                         }
                                     }
                                 } else {
-//                                    System.out.println("new user "+cuid);
+                                    System.out.println("new user " + farmerCode);
+//                                    for testing purpose you can comment this if else block (if the excel sheet contain unique cuids).
+//                                    Otherwise you have to entered newly generated unique cuid manually for 2nd audit.
                                     if (farmerCodeVsCuid.containsKey(farmerCode)) {
                                         cuid = farmerCodeVsCuid.get(farmerCode);
                                     } else {
                                         cuid = farmerListFinalService.createCuid();
                                         farmerCodeVsCuid.put(farmerCode, cuid);
                                     }
+                                    System.out.println("execeuting new farmer with given cuid");
                                     farmerList.setIsNew(1);
                                 }
                             }
@@ -790,7 +804,7 @@ public class FileService {
             farmerLists.add(farmerList);
 //            System.out.println(entry.getValue().getCufarmerID()+" is new : "+entry.getValue().getIsNew());
             FarmerListFinal ff = farmerListFinals.stream().filter(f -> f.getCufarmerID() == farmerList.getCufarmerID() && f.getPlotCode().equals(farmerList.getPlotCode())).findFirst().orElse(null);
-            if (ff == null){
+            if (ff == null) {
                 farmerList.setIsNew(1);
             }
             boolean isRemoved = farmerListFinals.remove(aFinal);
@@ -801,13 +815,13 @@ public class FileService {
 //            System.out.println("is removed : "+isRemoved+" "+entry.getValue().getCufarmerID()+" is new : "+entry.getValue().getIsNew());
 
         }
-        System.out.println("Total lis "+farmerLists.size());
-        System.out.println("must be remove "+farmerListFinals.size());
+        System.out.println("Total lis " + farmerLists.size());
+        System.out.println("must be remove " + farmerListFinals.size());
         System.out.println("comparison done " + farmerLists.size());
 
         if (!farmerListFinals.isEmpty()) {
             System.out.println(farmerListFinals.size() + " deleted");
-            for (FarmerListFinal farmerListFinal : farmerListFinals){
+            for (FarmerListFinal farmerListFinal : farmerListFinals) {
                 FarmerList farmerList = FarmerlistFinalMapper.INSTANCE.farmerListFinalToFarmerList(farmerListFinal);
                 farmerList.setIsChange(3);
                 farmerList.setAuditID(auditID);
@@ -815,7 +829,8 @@ public class FileService {
 
             }
 //            farmerListDeletedService.addDataToFarmListDeleted(farmerListFinals, auditID);
-            System.out.println(farmerLists);
+//            System.out.println(farmerLists);
+//            System.out.println(farmerLists);
         }
         return farmerLists;
     }
