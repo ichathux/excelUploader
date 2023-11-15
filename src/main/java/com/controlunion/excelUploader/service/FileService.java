@@ -944,7 +944,7 @@ public class FileService {
 
         ArrayList<Integer> checkedCrops = new ArrayList<>();
         ArrayList<ChangesDto> changesMap = new ArrayList<>();
-        log.info("comparing with ");
+//        log.info("comparing with ");
         try {
             for (FarmerListCropFinal crop_final : farmerListCrops_final) {
 
@@ -1297,14 +1297,14 @@ public class FileService {
         }
 
         for (Cell cell : cells) {
-            System.out.println("validating crop " + cell.getStringCellValue());
+
             if (cell.getCellType() == CellType.FORMULA) {
                 cell = isFormulaProceed(cell, evaluator);
             }
             if (cell.getCellType() == CellType.BLANK) {
                 continue;
             }
-
+            System.out.println("validating crop " + cell.getStringCellValue());
             boolean isCropValid = validateCrops(cropMapping, cell);
 
             if (!isCropValid) {

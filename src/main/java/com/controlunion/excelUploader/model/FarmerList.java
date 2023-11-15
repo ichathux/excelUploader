@@ -27,7 +27,7 @@ import java.util.List;
 public class FarmerList implements FarmerCommon {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "listid", nullable = true)
     private int listid;
     @Id
