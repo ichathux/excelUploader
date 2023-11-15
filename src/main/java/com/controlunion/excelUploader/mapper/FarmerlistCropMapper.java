@@ -29,5 +29,16 @@ public interface FarmerlistCropMapper {
     @Mapping(source = "estiYield", target = "estiYield")
     @Mapping(source = "realYield", target = "realYield")
     @Mapping(source = "noOfSesons", target = "noOfSesons")
+    FarmerListCrop_deleted farmerListCropToFarmerListCropDeleted(FarmerListCrop farmerListCrop);
+
+    @Mapping(source = "cropID", target = "cropID")
+    @Mapping(source = "cufarmerID", target = "cufarmerID")
+    @Mapping(source = "plotCode", target = "plotCode")
+    @Mapping(source = "noOfPlant", target = "noOfPlant")
+    @Mapping(source = "estiYield", target = "estiYield")
+    @Mapping(source = "realYield", target = "realYield")
+    @Mapping(source = "noOfSesons", target = "noOfSesons")
     FarmerListCropFinal farmerListCropToFarmerLIstCropFinal(FarmerListCrop farmerListCrop);
+
+
 }

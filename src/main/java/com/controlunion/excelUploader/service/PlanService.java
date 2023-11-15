@@ -1,9 +1,12 @@
 package com.controlunion.excelUploader.service;
 
 import com.controlunion.excelUploader.dto.PlanDto;
+import com.controlunion.excelUploader.mapper.FarmerlistFinalMapper;
+import com.controlunion.excelUploader.mapper.FarmerlistMapper;
 import com.controlunion.excelUploader.mapper.PlanMapper;
 import com.controlunion.excelUploader.model.FarmerList;
 import com.controlunion.excelUploader.model.FarmerListFinal;
+import com.controlunion.excelUploader.model.FarmerList_deleted;
 import com.controlunion.excelUploader.model.Plan;
 import com.controlunion.excelUploader.repository.PlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -26,6 +30,7 @@ public class PlanService {
     private final FarmerListFinalService farmerListFinalService;
     private final FarmerListService farmerListService;
     private final FarmerListFinalCropsService farmerListFinalCropsService;
+    private final FarmerListDeletedService farmerListDeletedService;
 
     public ResponseEntity<List<PlanDto>> getAllPlansForProId(long proID) {
         try{
@@ -103,6 +108,14 @@ public class PlanService {
             ArrayList<FarmerListFinal> farmerListsFarmerListFinals = farmerListFinalService.getAllFarmerListByProjectIdAndAuditId(
                     plan.getProID().getId().intValue(),
                     plan.getPlanID().intValue());
+
+//            ArrayList<FarmerList_deleted> farmerListsDeleted =
+//                    .collect(Collectors.toCollection(ArrayList::new));
+
+            farmerListDeletedService.addDataToFarmListDeleted(farmerLists, plan.getPlanID().intValue());
+            farmerLists = farmerLists.stream()
+                    .filter(f -> f.getIsChange() != 3)
+                    .collect(Collectors.toCollection(ArrayList::new));
 
             if (farmerListsFarmerListFinals.isEmpty()){
                 System.out.println("no prev finals");

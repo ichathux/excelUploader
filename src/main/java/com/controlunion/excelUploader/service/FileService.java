@@ -3,6 +3,8 @@ package com.controlunion.excelUploader.service;
 import com.controlunion.excelUploader.config.ExcelFilePropertiesConfig;
 import com.controlunion.excelUploader.dto.*;
 import com.controlunion.excelUploader.enums.Errors;
+import com.controlunion.excelUploader.mapper.FarmerlistFinalMapper;
+import com.controlunion.excelUploader.mapper.FarmerlistMapper;
 import com.controlunion.excelUploader.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +26,7 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -361,13 +364,13 @@ public class FileService {
                                         }
                                     }
                                 } else {
-                                    System.out.println("new user "+cuid);
-//                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
-//                                        cuid = farmerCodeVsCuid.get(farmerCode);
-//                                    } else {
-//                                        cuid = farmerListFinalService.createCuid();
-//                                        farmerCodeVsCuid.put(farmerCode, cuid);
-//                                    }
+//                                    System.out.println("new user "+cuid);
+                                    if (farmerCodeVsCuid.containsKey(farmerCode)) {
+                                        cuid = farmerCodeVsCuid.get(farmerCode);
+                                    } else {
+                                        cuid = farmerListFinalService.createCuid();
+                                        farmerCodeVsCuid.put(farmerCode, cuid);
+                                    }
                                     farmerList.setIsNew(1);
                                 }
                             }
@@ -804,7 +807,15 @@ public class FileService {
 
         if (!farmerListFinals.isEmpty()) {
             System.out.println(farmerListFinals.size() + " deleted");
-            farmerListDeletedService.addDataToFarmListDeleted(farmerListFinals, auditID);
+            for (FarmerListFinal farmerListFinal : farmerListFinals){
+                FarmerList farmerList = FarmerlistFinalMapper.INSTANCE.farmerListFinalToFarmerList(farmerListFinal);
+                farmerList.setIsChange(3);
+                farmerList.setAuditID(auditID);
+                farmerLists.add(farmerList);
+
+            }
+//            farmerListDeletedService.addDataToFarmListDeleted(farmerListFinals, auditID);
+            System.out.println(farmerLists);
         }
         return farmerLists;
     }

@@ -22,6 +22,8 @@ public interface FarmerListFinalRepository extends JpaRepository<FarmerListFinal
     @QueryHints(@QueryHint(name = "org.hibernate.readOnly", value = "true"))
     Optional<ArrayList<FarmerListFinal>> findAllByProID(int proId);
 
+    void deleteByCufarmerIDAndPlotCode(int cuid, String plotCode);
+
     void deleteAllByProID(int proId);
 
     @QueryHints(@QueryHint(name = "org.hibernate.readOnly", value = "true"))

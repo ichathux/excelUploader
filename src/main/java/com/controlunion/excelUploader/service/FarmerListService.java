@@ -71,6 +71,12 @@ public class FarmerListService {
                 ArrayList<FarmerList> farmerListsOldChanged = farmerList.get().stream()
                         .filter(f -> f.getIsChange() == 1)
                         .collect(Collectors.toCollection(ArrayList::new));
+
+                 ArrayList<FarmerList> farmerListsDeleted = farmerList.get().stream()
+                        .filter(f -> f.getIsChange() == 3)
+                        .collect(Collectors.toCollection(ArrayList::new));
+
+
                 System.out.println("size of new list : "+farmerListsNew.size());
                 System.out.println("size of changes list : "+farmerListsOldChanged.size());
 //                ArrayList<FarmerList> farmerLists = farmerList.get().stream()
@@ -87,8 +93,7 @@ public class FarmerListService {
 //                        .collect(Collectors.toCollection(ArrayList::new));
                 comparisonResponseDto.setNewFarmerList(farmerListsNew);
                 comparisonResponseDto.setExistingFarmerList(farmerListsOldChanged);
-                comparisonResponseDto.setDeletedFarmerList(farmerListDeletedService.getAllByProIdAndAuditId(proId, auditId));
-
+                comparisonResponseDto.setDeletedFarmerList(farmerListsDeleted);
             }
             return comparisonResponseDto;
         } catch (Exception e) {

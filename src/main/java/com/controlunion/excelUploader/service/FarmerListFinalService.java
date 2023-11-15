@@ -135,4 +135,8 @@ public class FarmerListFinalService {
         }
     }
 
+    public void deleteByCufarmerIDAndPlotCode(int cuid, String plotCode){
+        System.out.println("deleteing for "+cuid+" plot "+plotCode);
+        repository.deleteByCufarmerIDAndPlotCode(cuid, plotCode);
+    }
 }

@@ -13,5 +13,5 @@ public class ComparisonResponseDto {
 
     private ArrayList<FarmerList> newFarmerList;
     private ArrayList<FarmerList> existingFarmerList;
-    private ArrayList<FarmerList_deleted> deletedFarmerList;
+    private ArrayList<FarmerList> deletedFarmerList;
 }
