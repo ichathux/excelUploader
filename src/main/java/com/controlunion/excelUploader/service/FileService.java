@@ -782,6 +782,10 @@ public class FileService {
 
             FarmerList farmerList = compareFarmData(entry, aFinal);
             farmerLists.add(farmerList);
+            FarmerListFinal ff = farmerListFinals.stream().filter(f -> f.getCufarmerID() == farmerList.getCufarmerID() && f.getPlotCode().equals(farmerList.getPlotCode())).findFirst().orElse(null);
+            if (ff == null){
+                farmerList.setIsNew(1);
+            }
             farmerListFinals.remove(aFinal);
         }
         System.out.println("comparison done " + farmerLists.size());

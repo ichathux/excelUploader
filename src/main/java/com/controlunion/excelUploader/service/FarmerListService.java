@@ -59,6 +59,7 @@ public class FarmerListService {
             Optional<ArrayList<FarmerList>> farmerList = repository.findAllByProIDAndAuditID(proId, auditId);
             if (farmerList.isPresent()) {
                 System.out.println("size of list : "+farmerList.get().size());
+
                 ArrayList<FarmerList> farmerListsNew = farmerList.get().stream()
                         .filter(f -> f.getIsNew() == 1)
                         .peek(f -> f.setChngCropdata(f.getFarmerListCropList().stream()
@@ -66,10 +67,12 @@ public class FarmerListService {
                                 .collect(Collectors.joining(", ")))
                         )
                         .collect(Collectors.toCollection(ArrayList::new));
+
                 ArrayList<FarmerList> farmerListsOldChanged = farmerList.get().stream()
                         .filter(f -> f.getIsChange() == 1)
                         .collect(Collectors.toCollection(ArrayList::new));
-
+                System.out.println("size of new list : "+farmerListsNew.size());
+                System.out.println("size of changes list : "+farmerListsOldChanged.size());
 //                ArrayList<FarmerList> farmerLists = farmerList.get().stream()
 //                        .map(f -> {
 //                            if (f.getIsNew()== 1){
