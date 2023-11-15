@@ -148,7 +148,8 @@ public class FileService {
 
                     endTime = System.currentTimeMillis();
 
-//                    System.out.println(farmerLists);
+//                    System.out.println( "new "+farmerLists.stream().filter(f -> f.getIsNew()==1).count());
+//                    System.out.println("changed "+farmerLists.stream().filter(f -> f.getIsChange()==1).count());
                     farmerListService.saveFarmerList(proId, auditId, farmerLists);
                     endTime = System.currentTimeMillis();
                     log.info("task end : " + (endTime - startTime) + "ms");
@@ -785,9 +786,9 @@ public class FileService {
             farmerLists.add(farmerList);
 //            System.out.println(entry.getValue().getCufarmerID()+" is new : "+entry.getValue().getIsNew());
             FarmerListFinal ff = farmerListFinals.stream().filter(f -> f.getCufarmerID() == farmerList.getCufarmerID() && f.getPlotCode().equals(farmerList.getPlotCode())).findFirst().orElse(null);
-//            if (ff == null){
-//                farmerList.setIsNew(1);
-//            }
+            if (ff == null){
+                farmerList.setIsNew(1);
+            }
             boolean isRemoved = farmerListFinals.remove(aFinal);
 
 //            assert aFinal != null;
