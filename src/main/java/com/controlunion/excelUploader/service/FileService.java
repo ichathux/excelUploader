@@ -156,9 +156,10 @@ public class FileService {
 
                     endTime = System.currentTimeMillis();
                     log.info("task end : " + (endTime - startTime) + "ms");
-                    return farmerListService.saveFarmerList(proId, auditId, farmerLists);
+                    farmerListService.saveFarmerList(proId, auditId, farmerLists);
+                    return ResponseEntity.ok().build();
                 } catch (DataIntegrityViolationException e) {
-                    System.out.println("err "+e.getMessage());
+                    System.out.println("err " + e.getMessage());
                     e.printStackTrace();
                     errorList.add(ExcelErrorResponse.builder()
                             .error("Data already contained. Project :" + projectName + " Audit : " + auditId).build());
@@ -301,7 +302,7 @@ public class FileService {
                                     } else {
 //                                    existing farmer send error message to user enter cuid
                                         cuid = farmerListFinal.getCufarmerID();
-                                        farmerList.setListid(0);
+                                        farmerList.setIsNew(0);
 //                                    errorList.add(ExcelErrorResponse.builder()
 //                                            .error("You must enter cuid ")
 //                                            .correctValue(String.valueOf(cuid))
@@ -918,7 +919,8 @@ public class FileService {
             if (!aFinal.getCity().trim().equals(farmerList.getCity())) {
                 farmChanges.add(new FarmChangesDto("City", aFinal.getCity(), farmerList.getCity()));
             }
-            if (!aFinal.getDateCert().equals(farmerList.getDateCert())) {
+            if (!(aFinal.getDateCert() == null ? "null" : aFinal.getDateCert()).
+                    equals(farmerList.getDateCert() == null ? "null" : farmerList.getDateCert())) {
                 farmChanges.add(new FarmChangesDto("Application date for certification (yyyy-mm-dd)", String.valueOf(aFinal.getDateCert()), String.valueOf(farmerList.getDateCert())));
             }
             if (aFinal.getAplyRetrospe() != farmerList.getAplyRetrospe()) {

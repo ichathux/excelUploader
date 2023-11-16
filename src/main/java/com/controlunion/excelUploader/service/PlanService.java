@@ -54,9 +54,10 @@ public class PlanService {
         try{
             log.info("Getting last certified Plan for proId: " + proID);
             Optional<Plan> plan = planRepository.findTopOneByProIDAndCertifiedOrderByPlanIDDesc(
-
                     projectService.getProjectByProjectId(proID),
                     true);
+            planRepository.flush();
+
 //            log.info("found last certified Plan: " + plan.get().getPlanID());
 
             return plan.orElse(null);
@@ -121,7 +122,7 @@ public class PlanService {
                 System.out.println("no prev finals");
 //                farmerListService.deleteFromFarmerList(farmerLists);
                 farmerListFinalService.saveToFarmerListFinal(farmerLists);
-                return planRepository.save(plan);
+                return planRepository.saveAndFlush(plan);
             }else{
                 System.out.println("have prev finals"+farmerListsFarmerListFinals.size());
                 System.out.println("deleting prev crops final");
@@ -131,7 +132,7 @@ public class PlanService {
                 System.out.println("save farmerlist final new");
                 farmerListFinalService.saveToFarmerListFinal(farmerLists);
                 System.out.println("save plan");
-                return planRepository.save(plan);
+                return planRepository.saveAndFlush(plan);
             }
         } catch (Exception e) {
             e.printStackTrace();

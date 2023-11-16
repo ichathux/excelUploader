@@ -79,7 +79,6 @@ public class FarmerListFinalService {
         }
     }
 
-
     public void deleteFarmerListFinals(List<FarmerListFinal> values) {
         try {
             repository.deleteAll(values);
@@ -87,15 +86,6 @@ public class FarmerListFinalService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public void deleteFarmerListFinalByProId(int proID) {
-        try {
-            repository.deleteAllByProID(proID);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-//        System.out.println("farmer list Final deleted");
     }
 
     public List<FarmerListFinal> saveToFarmerListFinal(List<FarmerList> farmerLists) {
@@ -115,7 +105,7 @@ public class FarmerListFinalService {
                 farmerListFinal.setFarmerListCropFinalList(farmerListFinalCrops);
                 farmerListFinals.add(farmerListFinal);
             }
-            return repository.saveAll(farmerListFinals);
+            return repository.saveAllAndFlush(farmerListFinals);
         } catch (Exception e) {
             e.printStackTrace();
             return new ArrayList<>();

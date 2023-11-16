@@ -26,37 +26,6 @@ public class FarmerListDeletedService {
     private final FarmerlistDeletedRepository farmerlistDeletedRepository;
     private final FarmerListFinalService farmerListFinalService;
 
-//    public void addDataToFarmListDeleted(ArrayList<FarmerListFinal> values,
-//                                         int auditID) {
-//        try {
-//
-//            System.out.println(":Setting audit id : " + auditID);
-//            Timestamp currentDateTime = new Timestamp(System.currentTimeMillis());
-//            List<FarmerList_deleted> farmerList_deleteds =
-//                    values
-//                            .stream()
-//                            .map(
-//                                    (f) -> {
-//                                        FarmerList_deleted farmerList_deleted = FarmerlistFinalMapper.INSTANCE.farmerListFinalToFarmerListDeleted(f);
-//                                        farmerList_deleted.setAuditID(auditID);
-//                                        farmerList_deleted.setUser("isuru");
-//                                        farmerList_deleted.setSysTimeStamp(new Date(currentDateTime.getTime()));
-//                                        List<FarmerListCrop_deleted> farmerListCropFinals =
-//                                                f.getFarmerListCropFinalList()
-//                                                        .stream()
-//                                                        .map(FarmerlistCropFinalMapper.INSTANCE::farmerListCropFinalToFarmerListCropDeleted)
-//                                                        .collect(Collectors.toList());
-//                                        farmerList_deleted.setFarmerListCropList(farmerListCropFinals);
-//                                        return farmerList_deleted;
-//                                    })
-//                            .collect(Collectors.toList());
-//            farmerlistDeletedRepository.saveAll(farmerList_deleteds);
-//            farmerListFinalService.deleteFarmerListFinals(values);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     public void addDataToFarmListDeleted(ArrayList<FarmerList> farmerLists,
                                          int auditID) {
         try {
@@ -76,12 +45,9 @@ public class FarmerListDeletedService {
                     .collect(Collectors.toCollection(ArrayList::new));
 
             for (FarmerList_deleted farmerList_deleted : farmerList_deleteds) {
-//                System.out.println("deleteing " + farmerList_deleted);
                 farmerListFinalService.deleteByCufarmerIDAndPlotCode(farmerList_deleted.getCufarmerID(), farmerList_deleted.getPlotCode());
             }
-
-            farmerlistDeletedRepository.saveAll(farmerList_deleteds);
-//            farmerListFinalService.deleteFarmerListFinals(values);
+            farmerlistDeletedRepository.saveAllAndFlush(farmerList_deleteds);
 
         } catch (Exception e) {
             e.printStackTrace();
