@@ -29,9 +29,9 @@ import static javax.persistence.GenerationType.SEQUENCE;
 public class FarmerList implements FarmerCommon {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-//    @GeneratedValue(strategy = SEQUENCE, generator = "seqGen")
-//    @SequenceGenerator(name = "seqGen", sequenceName = "seq", initialValue = 1)
+//    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = SEQUENCE, generator = "seqGen")
+    @SequenceGenerator(name = "seqGen", sequenceName = "seq", initialValue = 1)
     @Column(name = "listid", nullable = true)
     private int listid;
     @Id

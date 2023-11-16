@@ -19,37 +19,60 @@ import java.util.stream.Collectors;
 public class FarmerListService {
 
     private final FarmerlistRepository repository;
-    private final FarmerListFinalService farmerListFinalService;
+//    private final FarmerListFinalService farmerListFinalService;
     private final CropService cropService;
-    private final FarmerListDeletedService farmerListDeletedService;
-    private final JDBCBatchInsertService jdbcBatchInsertService;
+//    private final FarmerListDeletedService farmerListDeletedService;
+//    private final JDBCBatchInsertService jdbcBatchInsertService;
 
     @Transactional
     public ResponseEntity<String> saveFarmerList(int proId, int auditId, Iterable<FarmerList> farmerLists) {
 
-        log.info("Start saving on db ");
-        ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
+        repository.flush();
+        try {
+            log.info("Start saving on db "+proId+" "+auditId);
+            ArrayList<FarmerList> farmerListsExist = checkFarmerListAlreadyExistForproidAndAuditID(proId, auditId);
+//            assert farmerListsExist != null;
+//            farmerLists.forEach(System.out::println);
+            System.out.println("size "+farmerListsExist.size());
 
-        if (farmerListsExist.isEmpty()) {
-            repository.saveAll(farmerLists);
+            if (farmerListsExist.isEmpty()) {
+                System.out.println("not contain");
+                farmerLists = repository.saveAllAndFlush(farmerLists);
+                System.out.println(farmerLists);
 //            jdbcBatchInsertService.insertAsBatchGroup(farmerLists);
-        } else {
-            log.info("deleted old farmer lists");
-            repository.deleteAllByProIDAndAuditID(proId, auditId);
-            repository.flush();
-            log.info("save new farmer lists");
-            repository.saveAll(farmerLists);
+            } else {
+                System.out.println("contain");
+                log.info("deleted old farmer lists "+proId+" "+auditId);
+
+                repository.deleteAllByProIDAndAuditID(proId, auditId);
+
+                repository.flush();
+                log.info("deleted");
+                log.info("check");
+
+                repository.findAllByProIDAndAuditID(proId, auditId);
+
+//                System.out.println(farmerLists1.get().size());
+                log.info("save new farmer lists");
+                repository.saveAllAndFlush(farmerLists);
+                log.info("save");
 //            jdbcBatchInsertService.insertAsBatchGroup(farmerLists);
+            }
+            return ResponseEntity.ok().build();
+        }catch (Exception e){
+            System.out.println("error occured" +e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.badRequest().build();
+
     }
 
     private ArrayList<FarmerList> checkFarmerListAlreadyExistForproidAndAuditID(int proId, int auditId) {
         try {
-            return repository.findAllByProIDAndAuditID(proId, auditId).orElse(new ArrayList<>());
+            return repository.findAllByProIDAndAuditID(proId, auditId).orElse(null);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ArrayList<>();
+            return null;
         }
     }
 

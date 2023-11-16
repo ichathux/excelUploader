@@ -153,11 +153,12 @@ public class FileService {
 
 //                    System.out.println( "new "+farmerLists.stream().filter(f -> f.getIsNew()==1).count());
 //                    System.out.println("changed "+farmerLists.stream().filter(f -> f.getIsChange()==1).count());
-                    farmerListService.saveFarmerList(proId, auditId, farmerLists);
+
                     endTime = System.currentTimeMillis();
                     log.info("task end : " + (endTime - startTime) + "ms");
-                    return ResponseEntity.ok().build();
+                    return farmerListService.saveFarmerList(proId, auditId, farmerLists);
                 } catch (DataIntegrityViolationException e) {
+                    System.out.println("err "+e.getMessage());
                     e.printStackTrace();
                     errorList.add(ExcelErrorResponse.builder()
                             .error("Data already contained. Project :" + projectName + " Audit : " + auditId).build());
@@ -357,8 +358,8 @@ public class FileService {
                                         }
 
                                     } else {
-                                        System.out.println(farmerListFinal.getFarmerName());
-                                        System.out.println("contain cuid inner "+cuid+" "+farmerListFinal.getCufarmerID());
+//                                        System.out.println(farmerListFinal.getFarmerName());
+//                                        System.out.println("contain cuid inner "+cuid+" "+farmerListFinal.getCufarmerID());
                                         farmerList.setIsNew(0);
 
                                         if (cuid != farmerListFinal.getCufarmerID()) {
@@ -375,7 +376,7 @@ public class FileService {
                                         }
                                     }
                                 } else {
-                                    System.out.println("new user " + farmerCode);
+//                                    System.out.println("new user " + farmerCode);
 //                                    for testing purpose you can comment this if else block (if the excel sheet contain unique cuids).
 //                                    Otherwise you have to entered newly generated unique cuid manually for 2nd audit.
                                     if (farmerCodeVsCuid.containsKey(farmerCode)) {
@@ -384,7 +385,7 @@ public class FileService {
                                         cuid = farmerListFinalService.createCuid();
                                         farmerCodeVsCuid.put(farmerCode, cuid);
                                     }
-                                    System.out.println("execeuting new farmer with given cuid");
+//                                    System.out.println("execeuting new farmer with given cuid");
                                     farmerList.setIsNew(1);
                                 }
                             }
@@ -815,9 +816,9 @@ public class FileService {
 //            System.out.println("is removed : "+isRemoved+" "+entry.getValue().getCufarmerID()+" is new : "+entry.getValue().getIsNew());
 
         }
-        System.out.println("Total lis " + farmerLists.size());
-        System.out.println("must be remove " + farmerListFinals.size());
-        System.out.println("comparison done " + farmerLists.size());
+//        System.out.println("Total lis " + farmerLists.size());
+//        System.out.println("must be remove " + farmerListFinals.size());
+//        System.out.println("comparison done " + farmerLists.size());
 
         if (!farmerListFinals.isEmpty()) {
             System.out.println(farmerListFinals.size() + " deleted");
@@ -891,7 +892,7 @@ public class FileService {
         ArrayList<FarmChangesDto> farmChanges = new ArrayList<>();
         ArrayList<ChangesDto> cropChanges = new ArrayList<>();
         FarmerList farmerList = entry.getValue();
-
+//        System.out.println(aFinal);
         if (aFinal == null) {
 
             System.out.println("new plot");
